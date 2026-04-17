@@ -1,93 +1,864 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<title>XLSX to JSON Converter</title>
-		<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-		<style>
-			body {
-				font-family: Arial, sans-serif;
-				padding: 20px;
-				background: #f5f5f5;
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Advanced File Converter</title>
+	<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+		
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			background: #f0f2f5;
+			padding: 20px;
+			line-height: 1.6;
+		}
+		
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+			overflow: hidden;
+		}
+		
+		.header {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			padding: 30px;
+			text-align: center;
+		}
+		
+		.header h1 {
+			font-size: 28px;
+			margin-bottom: 8px;
+		}
+		
+		.header p {
+			opacity: 0.9;
+			font-size: 14px;
+		}
+		
+		.content {
+			padding: 30px;
+		}
+		
+		.upload-section {
+			border: 2px dashed #ccc;
+			border-radius: 8px;
+			padding: 40px;
+			text-align: center;
+			background: #fafafa;
+			cursor: pointer;
+			transition: all 0.3s;
+		}
+		
+		.upload-section:hover {
+			border-color: #667eea;
+			background: #f5f7ff;
+		}
+		
+		.upload-section.dragover {
+			border-color: #667eea;
+			background: #e8ecff;
+		}
+		
+		.upload-icon {
+			font-size: 48px;
+			margin-bottom: 15px;
+			color: #667eea;
+		}
+		
+		.upload-section h3 {
+			margin-bottom: 8px;
+			color: #333;
+		}
+		
+		.upload-section p {
+			color: #666;
+			font-size: 14px;
+			margin-bottom: 15px;
+		}
+		
+		#fileInput {
+			display: none;
+		}
+		
+		.btn {
+			background: #667eea;
+			color: white;
+			border: none;
+			padding: 12px 24px;
+			border-radius: 6px;
+			font-size: 14px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+			display: inline-block;
+			margin: 5px;
+		}
+		
+		.btn:hover {
+			background: #5568d3;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+		}
+		
+		.btn:active {
+			transform: translateY(0);
+		}
+		
+		.btn:disabled {
+			background: #ccc;
+			cursor: not-allowed;
+			transform: none;
+		}
+		
+		.btn-secondary {
+			background: #48bb78;
+		}
+		
+		.btn-secondary:hover {
+			background: #38a169;
+		}
+		
+		.btn-danger {
+			background: #f56565;
+		}
+		
+		.btn-danger:hover {
+			background: #e53e3e;
+		}
+		
+		.stats-bar {
+			display: none;
+			background: #f7fafc;
+			padding: 20px;
+			border-radius: 8px;
+			margin: 20px 0;
+			border-left: 4px solid #667eea;
+		}
+		
+		.stats-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+			gap: 15px;
+		}
+		
+		.stat-item {
+			text-align: center;
+		}
+		
+		.stat-value {
+			font-size: 24px;
+			font-weight: bold;
+			color: #667eea;
+		}
+		
+		.stat-label {
+			font-size: 12px;
+			color: #666;
+			text-transform: uppercase;
+			margin-top: 5px;
+		}
+		
+		.controls {
+			display: none;
+			margin: 20px 0;
+			padding: 20px;
+			background: #f7fafc;
+			border-radius: 8px;
+		}
+		
+		.control-row {
+			display: flex;
+			gap: 15px;
+			align-items: center;
+			flex-wrap: wrap;
+			margin-bottom: 15px;
+		}
+		
+		.control-group {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		
+		.control-group label {
+			font-size: 14px;
+			font-weight: 600;
+			color: #333;
+		}
+		
+		select {
+			padding: 8px 12px;
+			border: 1px solid #ccc;
+			border-radius: 6px;
+			font-size: 14px;
+			background: white;
+			cursor: pointer;
+		}
+		
+		.checkbox-label {
+			display: flex;
+			align-items: center;
+			gap: 6px;
+			cursor: pointer;
+			font-size: 14px;
+			color: #333;
+		}
+		
+		input[type="checkbox"] {
+			width: 18px;
+			height: 18px;
+			cursor: pointer;
+		}
+		
+		.preview-section {
+			display: none;
+			margin-top: 20px;
+		}
+		
+		.preview-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 15px;
+		}
+		
+		.preview-header h3 {
+			color: #333;
+		}
+		
+		.tab-buttons {
+			display: flex;
+			gap: 5px;
+		}
+		
+		.tab-btn {
+			padding: 8px 16px;
+			border: 1px solid #ddd;
+			background: white;
+			cursor: pointer;
+			border-radius: 6px 6px 0 0;
+			font-size: 13px;
+			font-weight: 600;
+			color: #666;
+		}
+		
+		.tab-btn.active {
+			background: #667eea;
+			color: white;
+			border-color: #667eea;
+		}
+		
+		.preview-content {
+			background: #1e1e1e;
+			color: #d4d4d4;
+			padding: 20px;
+			border-radius: 8px;
+			max-height: 500px;
+			overflow: auto;
+			font-family: 'Consolas', 'Monaco', monospace;
+			font-size: 13px;
+			line-height: 1.5;
+		}
+		
+		.preview-content pre {
+			margin: 0;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+		
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			background: white;
+		}
+		
+		table th {
+			background: #667eea;
+			color: white;
+			padding: 12px;
+			text-align: left;
+			font-weight: 600;
+			position: sticky;
+			top: 0;
+		}
+		
+		table td {
+			padding: 10px 12px;
+			border-bottom: 1px solid #e2e8f0;
+			color: #333;
+		}
+		
+		table tr:hover {
+			background: #f7fafc;
+		}
+		
+		.file-info {
+			display: none;
+			background: #e6fffa;
+			border-left: 4px solid #38b2ac;
+			padding: 15px;
+			border-radius: 4px;
+			margin-bottom: 20px;
+		}
+		
+		.file-info strong {
+			color: #234e52;
+		}
+		
+		.action-buttons {
+			display: none;
+			margin-top: 20px;
+			padding-top: 20px;
+			border-top: 2px solid #e2e8f0;
+			text-align: center;
+		}
+		
+		.format-badges {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			margin-top: 10px;
+		}
+		
+		.badge {
+			padding: 4px 10px;
+			background: #e6fffa;
+			color: #234e52;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 600;
+		}
+		
+		.error-message {
+			display: none;
+			background: #fff5f5;
+			border-left: 4px solid #f56565;
+			padding: 15px;
+			border-radius: 4px;
+			margin: 20px 0;
+			color: #742a2a;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>📊 Advanced File Converter</h1>
+			<p>Convert between XLSX, XLS, CSV, TSV, JSON, and XML formats with ease</p>
+		</div>
+		
+		<div class="content">
+			<div class="upload-section" id="uploadSection">
+				<div class="upload-icon">📁</div>
+				<h3>Upload Your File</h3>
+				<p>Drag and drop or click to browse</p>
+				<div class="format-badges">
+					<span class="badge">XLSX</span>
+					<span class="badge">XLS</span>
+					<span class="badge">CSV</span>
+					<span class="badge">TSV</span>
+					<span class="badge">JSON</span>
+				</div>
+				<input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.tsv,.json" />
+			</div>
+			
+			<div class="error-message" id="errorMessage"></div>
+			
+			<div class="file-info" id="fileInfo"></div>
+			
+			<div class="stats-bar" id="statsBar">
+				<div class="stats-grid" id="statsGrid"></div>
+			</div>
+			
+			<div class="controls" id="controls">
+				<div class="control-row">
+					<div class="control-group">
+						<label for="outputFormat">Output Format:</label>
+						<select id="outputFormat">
+							<option value="json">JSON</option>
+							<option value="csv">CSV</option>
+							<option value="tsv">TSV</option>
+							<option value="xlsx">XLSX</option>
+							<option value="xml">XML</option>
+							<option value="html">HTML Table</option>
+						</select>
+					</div>
+					
+					<div class="control-group">
+						<label for="sheetSelect">Sheet:</label>
+						<select id="sheetSelect"></select>
+					</div>
+				</div>
+				
+				<div class="control-row">
+					<label class="checkbox-label">
+						<input type="checkbox" id="prettyPrint" checked />
+						Pretty Print
+					</label>
+					
+					<label class="checkbox-label">
+						<input type="checkbox" id="includeHeaders" checked />
+						Include Headers
+					</label>
+					
+					<label class="checkbox-label">
+						<input type="checkbox" id="skipEmpty" />
+						Skip Empty Cells
+					</label>
+				</div>
+			</div>
+			
+			<div class="preview-section" id="previewSection">
+				<div class="preview-header">
+					<h3>Preview</h3>
+					<div class="tab-buttons">
+						<button class="tab-btn active" data-tab="formatted">Formatted</button>
+						<button class="tab-btn" data-tab="table">Table</button>
+						<button class="tab-btn" data-tab="raw">Raw</button>
+					</div>
+				</div>
+				<div class="preview-content" id="previewContent"></div>
+			</div>
+			
+			<div class="action-buttons" id="actionButtons">
+				<button class="btn btn-secondary" onclick="downloadFile()">
+					⬇️ Download File
+				</button>
+				<button class="btn" onclick="copyToClipboard()">
+					📋 Copy to Clipboard
+				</button>
+				<button class="btn btn-danger" onclick="reset()">
+					🔄 Reset
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		let workbookData = null;
+		let convertedData = null;
+		let currentTab = 'formatted';
+		let currentFileName = '';
+
+		// Setup event listeners
+		document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+		document.getElementById('uploadSection').addEventListener('click', () => {
+			document.getElementById('fileInput').click();
+		});
+		
+		// Drag and drop
+		const uploadSection = document.getElementById('uploadSection');
+		uploadSection.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			uploadSection.classList.add('dragover');
+		});
+		
+		uploadSection.addEventListener('dragleave', () => {
+			uploadSection.classList.remove('dragover');
+		});
+		
+		uploadSection.addEventListener('drop', (e) => {
+			e.preventDefault();
+			uploadSection.classList.remove('dragover');
+			const files = e.dataTransfer.files;
+			if (files.length > 0) {
+				handleFile(files[0]);
 			}
-			h2 {
-				margin-bottom: 10px;
-			}
-			#output {
-				white-space: pre-wrap;
-				background: #111;
-				color: #0f0;
-				padding: 15px;
-				border-radius: 8px;
-				max-height: 400px;
-				overflow: auto;
-			}
-			button {
-				margin-top: 10px;
-				padding: 10px 15px;
-				cursor: pointer;
-			}
-		</style>
-	</head>
-	<body>
-		<h2>XLSX → JSON Converter</h2>
-
-		<input type="file" id="fileInput" accept=".xlsx, .xls" />
-		<br />
-		<button onclick="downloadJSON()">Download JSON</button>
-
-		<h3>Preview:</h3>
-		<div id="output"></div>
-
-		<script>
-			let jsonData = [];
-
-			document.getElementById('fileInput').addEventListener('change', handleFile);
-
-			function handleFile(e) {
-				const file = e.target.files[0];
-				if (!file) return;
-
-				const reader = new FileReader();
-
-				reader.onload = function (event) {
-					const data = new Uint8Array(event.target.result);
-					const workbook = XLSX.read(data, { type: 'array' });
-
-					const sheetName = workbook.SheetNames[0];
-					const sheet = workbook.Sheets[sheetName];
-
-					// Convert sheet to JSON (clean, header-based)
-					jsonData = XLSX.utils.sheet_to_json(sheet, {
-						defval: '', // fill empty cells
-						raw: false, // formatted values
-					});
-
-					// Show JSON
-					document.getElementById('output').textContent = JSON.stringify(jsonData, null, 2);
-				};
-
+		});
+		
+		// Tab switching
+		document.querySelectorAll('.tab-btn').forEach(btn => {
+			btn.addEventListener('click', () => {
+				document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				currentTab = btn.dataset.tab;
+				updatePreview();
+			});
+		});
+		
+		// Control changes
+		document.getElementById('outputFormat').addEventListener('change', convertData);
+		document.getElementById('sheetSelect').addEventListener('change', convertData);
+		document.getElementById('prettyPrint').addEventListener('change', updatePreview);
+		document.getElementById('includeHeaders').addEventListener('change', convertData);
+		document.getElementById('skipEmpty').addEventListener('change', convertData);
+		
+		function handleFileSelect(e) {
+			const file = e.target.files[0];
+			if (file) handleFile(file);
+		}
+		
+		function handleFile(file) {
+			hideError();
+			currentFileName = file.name.replace(/\.[^/.]+$/, "");
+			
+			const reader = new FileReader();
+			const fileExt = file.name.split('.').pop().toLowerCase();
+			
+			if (fileExt === 'json') {
+				reader.onload = (e) => handleJSONFile(e.target.result);
+				reader.readAsText(file);
+			} else if (fileExt === 'csv' || fileExt === 'tsv') {
+				reader.onload = (e) => handleCSVFile(e.target.result, fileExt === 'tsv' ? '\t' : ',');
+				reader.readAsText(file);
+			} else {
+				reader.onload = (e) => handleExcelFile(e.target.result);
 				reader.readAsArrayBuffer(file);
 			}
-
-			function downloadJSON() {
-				if (!jsonData.length) {
-					alert('No data to download!');
+			
+			showFileInfo(file);
+		}
+		
+		function handleExcelFile(data) {
+			try {
+				const uint8 = new Uint8Array(data);
+				workbookData = XLSX.read(uint8, { type: 'array' });
+				
+				// Populate sheet selector
+				const sheetSelect = document.getElementById('sheetSelect');
+				sheetSelect.innerHTML = '';
+				workbookData.SheetNames.forEach(name => {
+					const option = document.createElement('option');
+					option.value = name;
+					option.textContent = name;
+					sheetSelect.appendChild(option);
+				});
+				
+				convertData();
+				showControls();
+			} catch (error) {
+				showError('Failed to read Excel file: ' + error.message);
+			}
+		}
+		
+		function handleJSONFile(content) {
+			try {
+				const jsonData = JSON.parse(content);
+				const wb = XLSX.utils.book_new();
+				const ws = XLSX.utils.json_to_sheet(Array.isArray(jsonData) ? jsonData : [jsonData]);
+				XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+				workbookData = wb;
+				
+				const sheetSelect = document.getElementById('sheetSelect');
+				sheetSelect.innerHTML = '<option value="Sheet1">Sheet1</option>';
+				
+				convertData();
+				showControls();
+			} catch (error) {
+				showError('Invalid JSON file: ' + error.message);
+			}
+		}
+		
+		function handleCSVFile(content, delimiter) {
+			try {
+				const wb = XLSX.utils.book_new();
+				const ws = XLSX.utils.aoa_to_sheet(
+					content.split('\n').map(row => row.split(delimiter))
+				);
+				XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+				workbookData = wb;
+				
+				const sheetSelect = document.getElementById('sheetSelect');
+				sheetSelect.innerHTML = '<option value="Sheet1">Sheet1</option>';
+				
+				convertData();
+				showControls();
+			} catch (error) {
+				showError('Failed to parse CSV/TSV: ' + error.message);
+			}
+		}
+		
+		function convertData() {
+			if (!workbookData) return;
+			
+			const sheetName = document.getElementById('sheetSelect').value;
+			const sheet = workbookData.Sheets[sheetName];
+			const format = document.getElementById('outputFormat').value;
+			const skipEmpty = document.getElementById('skipEmpty').checked;
+			const includeHeaders = document.getElementById('includeHeaders').checked;
+			
+			try {
+				if (format === 'json') {
+					convertedData = XLSX.utils.sheet_to_json(sheet, {
+						defval: skipEmpty ? undefined : '',
+						raw: false,
+						header: includeHeaders ? undefined : 1
+					});
+				} else if (format === 'csv') {
+					convertedData = XLSX.utils.sheet_to_csv(sheet);
+				} else if (format === 'tsv') {
+					convertedData = XLSX.utils.sheet_to_csv(sheet, { FS: '\t' });
+				} else if (format === 'xlsx') {
+					convertedData = workbookData;
+				} else if (format === 'xml') {
+					const jsonData = XLSX.utils.sheet_to_json(sheet);
+					convertedData = jsonToXML(jsonData);
+				} else if (format === 'html') {
+					convertedData = XLSX.utils.sheet_to_html(sheet);
+				}
+				
+				updateStats(sheet);
+				updatePreview();
+				showActionButtons();
+			} catch (error) {
+				showError('Conversion error: ' + error.message);
+			}
+		}
+		
+		function jsonToXML(json) {
+			let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n';
+			json.forEach((item, index) => {
+				xml += `  <record index="${index}">\n`;
+				for (let key in item) {
+					const safeKey = key.replace(/[^a-zA-Z0-9_]/g, '_');
+					const safeValue = String(item[key]).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+					xml += `    <${safeKey}>${safeValue}</${safeKey}>\n`;
+				}
+				xml += '  </record>\n';
+			});
+			xml += '</root>';
+			return xml;
+		}
+		
+		function updateStats(sheet) {
+			const range = XLSX.utils.decode_range(sheet['!ref']);
+			const rows = range.e.r - range.s.r + 1;
+			const cols = range.e.c - range.s.c + 1;
+			
+			let cellCount = 0;
+			let filledCells = 0;
+			
+			for (let R = range.s.r; R <= range.e.r; R++) {
+				for (let C = range.s.c; C <= range.e.c; C++) {
+					cellCount++;
+					const cell = sheet[XLSX.utils.encode_cell({ r: R, c: C })];
+					if (cell && cell.v !== undefined && cell.v !== '') {
+						filledCells++;
+					}
+				}
+			}
+			
+			const statsGrid = document.getElementById('statsGrid');
+			statsGrid.innerHTML = `
+				<div class="stat-item">
+					<div class="stat-value">${rows}</div>
+					<div class="stat-label">Rows</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-value">${cols}</div>
+					<div class="stat-label">Columns</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-value">${filledCells}</div>
+					<div class="stat-label">Filled Cells</div>
+				</div>
+				<div class="stat-item">
+					<div class="stat-value">${cellCount}</div>
+					<div class="stat-label">Total Cells</div>
+				</div>
+			`;
+			
+			document.getElementById('statsBar').style.display = 'block';
+		}
+		
+		function updatePreview() {
+			const preview = document.getElementById('previewContent');
+			const format = document.getElementById('outputFormat').value;
+			const prettyPrint = document.getElementById('prettyPrint').checked;
+			
+			if (currentTab === 'table' && (format === 'json' || format === 'csv' || format === 'tsv')) {
+				showTableView();
+			} else if (currentTab === 'raw') {
+				showRawView();
+			} else {
+				showFormattedView(prettyPrint);
+			}
+		}
+		
+		function showFormattedView(pretty) {
+			const preview = document.getElementById('previewContent');
+			const format = document.getElementById('outputFormat').value;
+			
+			if (format === 'json') {
+				preview.innerHTML = `<pre>${pretty ? JSON.stringify(convertedData, null, 2) : JSON.stringify(convertedData)}</pre>`;
+			} else if (format === 'html') {
+				preview.innerHTML = convertedData;
+			} else {
+				preview.innerHTML = `<pre>${convertedData}</pre>`;
+			}
+		}
+		
+		function showTableView() {
+			const preview = document.getElementById('previewContent');
+			const format = document.getElementById('outputFormat').value;
+			let data = convertedData;
+			
+			if (format === 'csv' || format === 'tsv') {
+				const delimiter = format === 'tsv' ? '\t' : ',';
+				const rows = data.split('\n').filter(r => r.trim());
+				const headers = rows[0].split(delimiter);
+				
+				let html = '<table><thead><tr>';
+				headers.forEach(h => html += `<th>${h}</th>`);
+				html += '</tr></thead><tbody>';
+				
+				for (let i = 1; i < Math.min(rows.length, 101); i++) {
+					const cells = rows[i].split(delimiter);
+					html += '<tr>';
+					cells.forEach(c => html += `<td>${c}</td>`);
+					html += '</tr>';
+				}
+				html += '</tbody></table>';
+				
+				if (rows.length > 101) {
+					html += `<p style="text-align:center; padding:15px; color:#666;">Showing first 100 rows of ${rows.length - 1}</p>`;
+				}
+				
+				preview.innerHTML = html;
+			} else if (format === 'json' && Array.isArray(data)) {
+				if (data.length === 0) {
+					preview.innerHTML = '<p style="text-align:center; padding:20px; color:#666;">No data to display</p>';
 					return;
 				}
-
-				const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
-					type: 'application/json',
+				
+				const headers = Object.keys(data[0]);
+				let html = '<table><thead><tr>';
+				headers.forEach(h => html += `<th>${h}</th>`);
+				html += '</tr></thead><tbody>';
+				
+				const displayData = data.slice(0, 100);
+				displayData.forEach(row => {
+					html += '<tr>';
+					headers.forEach(h => html += `<td>${row[h] !== undefined ? row[h] : ''}</td>`);
+					html += '</tr>';
 				});
-
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = 'data.json';
-				a.click();
-
-				URL.revokeObjectURL(url);
+				html += '</tbody></table>';
+				
+				if (data.length > 100) {
+					html += `<p style="text-align:center; padding:15px; color:#666;">Showing first 100 rows of ${data.length}</p>`;
+				}
+				
+				preview.innerHTML = html;
 			}
-		</script>
-	</body>
+		}
+		
+		function showRawView() {
+			const preview = document.getElementById('previewContent');
+			const format = document.getElementById('outputFormat').value;
+			
+			if (format === 'json') {
+				preview.innerHTML = `<pre>${JSON.stringify(convertedData)}</pre>`;
+			} else {
+				preview.innerHTML = `<pre>${convertedData}</pre>`;
+			}
+		}
+		
+		function downloadFile() {
+			const format = document.getElementById('outputFormat').value;
+			let content, mimeType, extension;
+			
+			if (format === 'json') {
+				content = JSON.stringify(convertedData, null, 2);
+				mimeType = 'application/json';
+				extension = 'json';
+			} else if (format === 'csv') {
+				content = convertedData;
+				mimeType = 'text/csv';
+				extension = 'csv';
+			} else if (format === 'tsv') {
+				content = convertedData;
+				mimeType = 'text/tab-separated-values';
+				extension = 'tsv';
+			} else if (format === 'xml') {
+				content = convertedData;
+				mimeType = 'application/xml';
+				extension = 'xml';
+			} else if (format === 'html') {
+				content = convertedData;
+				mimeType = 'text/html';
+				extension = 'html';
+			} else if (format === 'xlsx') {
+				XLSX.writeFile(convertedData, `${currentFileName}_converted.xlsx`);
+				return;
+			}
+			
+			const blob = new Blob([content], { type: mimeType });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = `${currentFileName}_converted.${extension}`;
+			a.click();
+			URL.revokeObjectURL(url);
+		}
+		
+		function copyToClipboard() {
+			const format = document.getElementById('outputFormat').value;
+			let content;
+			
+			if (format === 'json') {
+				content = JSON.stringify(convertedData, null, 2);
+			} else {
+				content = convertedData;
+			}
+			
+			navigator.clipboard.writeText(content).then(() => {
+				const btn = event.target;
+				const originalText = btn.innerHTML;
+				btn.innerHTML = '✅ Copied!';
+				setTimeout(() => {
+					btn.innerHTML = originalText;
+				}, 2000);
+			});
+		}
+		
+		function reset() {
+			workbookData = null;
+			convertedData = null;
+			currentFileName = '';
+			document.getElementById('fileInput').value = '';
+			document.getElementById('controls').style.display = 'none';
+			document.getElementById('previewSection').style.display = 'none';
+			document.getElementById('actionButtons').style.display = 'none';
+			document.getElementById('statsBar').style.display = 'none';
+			document.getElementById('fileInfo').style.display = 'none';
+			hideError();
+		}
+		
+		function showControls() {
+			document.getElementById('controls').style.display = 'block';
+			document.getElementById('previewSection').style.display = 'block';
+		}
+		
+		function showActionButtons() {
+			document.getElementById('actionButtons').style.display = 'block';
+		}
+		
+		function showFileInfo(file) {
+			const info = document.getElementById('fileInfo');
+			const size = (file.size / 1024).toFixed(2);
+			info.innerHTML = `<strong>File loaded:</strong> ${file.name} (${size} KB)`;
+			info.style.display = 'block';
+		}
+		
+		function showError(message) {
+			const errorDiv = document.getElementById('errorMessage');
+			errorDiv.textContent = '❌ ' + message;
+			errorDiv.style.display = 'block';
+		}
+		
+		function hideError() {
+			document.getElementById('errorMessage').style.display = 'none';
+		}
+	</script>
+</body>
 </html>
