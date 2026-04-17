@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>XLSX to JSON Converter</title>
+		<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				padding: 20px;
+				background: #f5f5f5;
+			}
+			h2 {
+				margin-bottom: 10px;
+			}
+			#output {
+				white-space: pre-wrap;
+				background: #111;
+				color: #0f0;
+				padding: 15px;
+				border-radius: 8px;
+				max-height: 400px;
+				overflow: auto;
+			}
+			button {
+				margin-top: 10px;
+				padding: 10px 15px;
+				cursor: pointer;
+			}
+		</style>
+	</head>
+	<body>
+		<h2>XLSX → JSON Converter</h2>
+
+		<input type="file" id="fileInput" accept=".xlsx, .xls" />
+		<br />
+		<button onclick="downloadJSON()">Download JSON</button>
+
+		<h3>Preview:</h3>
+		<div id="output"></div>
+
+		<script>
+			let jsonData = [];
+
+			document.getElementById('fileInput').addEventListener('change', handleFile);
+
+			function handleFile(e) {
+				const file = e.target.files[0];
+				if (!file) return;
+
+				const reader = new FileReader();
+
+				reader.onload = function (event) {
+					const data = new Uint8Array(event.target.result);
+					const workbook = XLSX.read(data, { type: 'array' });
+
+					const sheetName = workbook.SheetNames[0];
+					const sheet = workbook.Sheets[sheetName];
+
+					// Convert sheet to JSON (clean, header-based)
+					jsonData = XLSX.utils.sheet_to_json(sheet, {
+						defval: '', // fill empty cells
+						raw: false, // formatted values
+					});
+
+					// Show JSON
+					document.getElementById('output').textContent = JSON.stringify(jsonData, null, 2);
+				};
+
+				reader.readAsArrayBuffer(file);
+			}
+
+			function downloadJSON() {
+				if (!jsonData.length) {
+					alert('No data to download!');
+					return;
+				}
+
+				const blob = new Blob([JSON.stringify(jsonData, null, 2)], {
+					type: 'application/json',
+				});
+
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'data.json';
+				a.click();
+
+				URL.revokeObjectURL(url);
+			}
+		</script>
+	</body>
+</html>
