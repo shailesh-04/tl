@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TL Engine - UUID Generator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c7c4d7",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed": "#e1e0ff",
+                        "inverse-primary": "#494bd6",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "secondary": "#4edea3",
+                        "on-primary-container": "#0d0096",
+                        "primary-container": "#8083ff",
+                        "inverse-on-surface": "#283044",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#3e2400",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#07006c",
+                        "tertiary": "#ffb95f",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#472a00",
+                        "outline-variant": "#464554",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "surface-bright": "#31394d",
+                        "surface-tint": "#c0c1ff",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#00a572",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-surface": "#dae2fd",
+                        "primary": "#c0c1ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#ca8100",
+                        "on-primary": "#1000a9",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container": "#171f33",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-sm": "16px",
+                        "margin-lg": "80px",
+                        "margin-md": "40px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Geist"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Geist"],
+                        "body-md": ["Geist"],
+                        "headline-lg-mobile": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for results area */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #464554; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #908fa0; }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #c0c1ff;
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 10px rgba(192, 193, 255, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #464554;
+            border-radius: 2px;
+        }
+        input[type=range]:focus::-webkit-slider-runnable-track {
+            background: #908fa0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex items-center justify-between px-gutter max-w-container-max mx-auto h-16 md:left-1/2 md:-translate-x-1/2">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors Active: scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings: 'FILL' 1;">build</span>
+<span class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</div>
+</div>
+<button class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors Active: scale-95 duration-150 p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+</header>
+<!-- NavigationDrawer (Desktop) -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface-container dark:bg-surface-container z-40 pt-20">
+<div class="px-6 mb-8">
+<span class="font-headline-lg text-headline-lg text-primary block mt-4">TL Engine</span>
+</div>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined">grid_view</span> All Tools
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined">transform</span> Converters
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 bg-secondary-container text-on-secondary-container rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined">auto_awesome</span> Generators
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 py-3 px-4 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out font-label-sm text-label-sm mt-auto" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+                </a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 pt-24 pb-32 px-4 md:px-gutter lg:ml-64 max-w-container-max mx-auto w-full">
+<!-- Breadcrumb & Header -->
+<div class="mb-margin-md">
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm mb-4">
+<span>Generators</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">UUID Generator</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">UUID Generator</h1>
+<p class="text-on-surface-variant mt-2 max-w-2xl">Generate universally unique identifiers instantly. Configure version and quantity for your development needs.</p>
+</div>
+<!-- Tool Interface -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Controls Panel (Left) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Configuration Card -->
+<div class="glass-card rounded-xl p-6 relative group overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-50">
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/10 px-2 py-1 rounded">CONFIG</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">tune</span> Settings
+                    </h3>
+<!-- Version Selector -->
+<div class="mb-8">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-3 uppercase tracking-wider">Version</label>
+<div class="grid grid-cols-2 gap-3">
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="uuid_version" type="radio" value="v1"/>
+<div class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary/10 hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 text-on-surface">
+<span class="font-label-sm text-label-sm">UUID v1</span>
+</div>
+</label>
+<label class="relative cursor-pointer">
+<input checked="" class="peer sr-only" name="uuid_version" type="radio" value="v4"/>
+<div class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:shadow-[0_0_15px_rgba(192,193,255,0.15)] hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 text-on-surface">
+<span class="font-label-sm text-label-sm">UUID v4</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Quantity Slider -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Quantity</label>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-0.5 rounded" id="quantity_display">10</span>
+</div>
+<input class="w-full" id="quantity_slider" max="100" min="1" type="range" value="10"/>
+<div class="flex justify-between text-outline text-xs mt-2 font-label-sm">
+<span>1</span>
+<span>100</span>
+</div>
+</div>
+<!-- Generate Action -->
+<button class="w-full bg-primary text-on-primary font-headline-lg-mobile text-[16px] font-semibold py-3 rounded-lg hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.2)]" id="generate_btn">
+<span class="material-symbols-outlined">bolt</span> Generate UUIDs
+                    </button>
+</div>
+<!-- Info Card -->
+<div class="glass-card rounded-xl p-6 border-l-4 border-l-secondary-fixed">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary-fixed mt-1">info</span>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-surface mb-1">UUID Versions</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-2"><strong>v1:</strong> Time-based. Generates unique IDs based on the current timestamp and MAC address.</p>
+<p class="text-sm text-on-surface-variant leading-relaxed"><strong>v4:</strong> Random. Generates unique IDs based on random numbers. Highly recommended for most use cases.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Results Panel (Right) -->
+<div class="lg:col-span-8 flex flex-col">
+<div class="glass-card rounded-xl flex-1 flex flex-col overflow-hidden relative">
+<!-- Results Header -->
+<div class="border-b border-white/10 p-4 bg-surface-container-low flex justify-between items-center z-10">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">data_object</span> OUTPUT
+                        </h3>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-md border border-white/20 text-on-surface-variant hover:bg-white/5 transition-colors font-label-sm text-label-sm flex items-center gap-1" id="clear_btn">
+<span class="material-symbols-outlined text-[14px]">clear_all</span> Clear
+                            </button>
+<button class="px-3 py-1.5 rounded-md bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed transition-colors font-label-sm text-label-sm flex items-center gap-1" id="copy_all_btn">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Copy All
+                            </button>
+</div>
+</div>
+<!-- Results Display -->
+<div class="flex-1 bg-[#1E293B]/50 p-6 relative group h-[400px] lg:h-auto overflow-hidden">
+<!-- Watermark/Empty State -->
+<div class="absolute inset-0 flex flex-col items-center justify-center opacity-30 hidden" id="empty_state">
+<span class="material-symbols-outlined text-6xl text-outline mb-2">fingerprint</span>
+<p class="font-label-sm text-label-sm text-outline">Awaiting Generation...</p>
+</div>
+<!-- Scrollable Results -->
+<div class="h-full overflow-y-auto pr-2 space-y-2 font-label-sm text-label-sm text-on-surface" id="results_container">
+<!-- Initial fake data for demonstration -->
+<div class="flex justify-between items-center p-2 rounded hover:bg-surface-variant/50 group/item transition-colors">
+<span>123e4567-e89b-12d3-a456-426614174000</span>
+<button class="opacity-0 group-hover/item:opacity-100 text-outline hover:text-primary transition-opacity"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+<div class="flex justify-between items-center p-2 rounded hover:bg-surface-variant/50 group/item transition-colors">
+<span>987f6543-a21c-45d6-b789-1234567890ab</span>
+<button class="opacity-0 group-hover/item:opacity-100 text-outline hover:text-primary transition-opacity"><span class="material-symbols-outlined text-[16px]">content_copy</span></button>
+</div>
+</div>
+</div>
+<!-- Status bar -->
+<div class="border-t border-white/10 p-2 bg-surface-container-low text-xs text-outline font-label-sm flex justify-between px-4">
+<span id="status_message">Ready</span>
+<span id="count_indicator">2 items</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto text-on-surface-variant dark:text-on-surface-variant font-label-sm text-label-sm opacity-80 hover:opacity-100 transition-opacity">
+<div class="font-bold text-on-surface mb-4 md:mb-0">
+            © 2026 TL - Tools Library. Professional Utility Suite.
+        </div>
+<ul class="flex gap-6">
+<li><a class="hover:text-secondary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Open Source</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Privacy</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Terms</a></li>
+</ul>
+</footer>
+<script>
+        // Simple logic for the slider and mock generation
+        document.addEventListener('DOMContentLoaded', () => {
+            const slider = document.getElementById('quantity_slider');
+            const display = document.getElementById('quantity_display');
+            const generateBtn = document.getElementById('generate_btn');
+            const clearBtn = document.getElementById('clear_btn');
+            const resultsContainer = document.getElementById('results_container');
+            const emptyState = document.getElementById('empty_state');
+            const statusMessage = document.getElementById('status_message');
+            const countIndicator = document.getElementById('count_indicator');
+            const copyAllBtn = document.getElementById('copy_all_btn');
+
+            // Update slider display
+            slider.addEventListener('input', (e) => {
+                display.textContent = e.target.value;
+            });
+
+            // Mock UUID Generation (simplified for UI demo)
+            function generateMockUUID() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            }
+
+            generateBtn.addEventListener('click', () => {
+                const count = parseInt(slider.value, 10);
+                const version = document.querySelector('input[name="uuid_version"]:checked').value;
+                
+                // Show generating state
+                generateBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Generating...';
+                generateBtn.disabled = true;
+
+                setTimeout(() => {
+                    resultsContainer.innerHTML = '';
+                    emptyState.classList.add('hidden');
+                    
+                    for(let i=0; i<count; i++) {
+                        const uuid = generateMockUUID();
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center p-2 rounded hover:bg-surface-variant/50 group/item transition-colors';
+                        div.innerHTML = `
+                            <span>${uuid}</span>
+                            <button class="opacity-0 group-hover/item:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy">
+                                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                            </button>
+                        `;
+                        resultsContainer.appendChild(div);
+                    }
+                    
+                    statusMessage.innerHTML = `<span class="text-secondary flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">check_circle</span> Generated ${count} UUID ${version}s</span>`;
+                    countIndicator.textContent = `${count} items`;
+                    
+                    // Reset button
+                    generateBtn.innerHTML = '<span class="material-symbols-outlined">bolt</span> Generate UUIDs';
+                    generateBtn.disabled = false;
+                }, 300); // Fake delay for tactile feel
+            });
+
+            clearBtn.addEventListener('click', () => {
+                resultsContainer.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                statusMessage.textContent = 'Cleared';
+                countIndicator.textContent = '0 items';
+            });
+            
+            copyAllBtn.addEventListener('click', () => {
+                const items = resultsContainer.querySelectorAll('span:first-child');
+                if(items.length > 0) {
+                     const originalText = copyAllBtn.innerHTML;
+                     copyAllBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span> Copied!';
+                     statusMessage.textContent = 'All UUIDs copied to clipboard';
+                     
+                     setTimeout(() => {
+                         copyAllBtn.innerHTML = originalText;
+                     }, 2000);
+                }
+            });
+        });
+    </script>
+</body></html>

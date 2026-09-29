@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UUID Generator - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="../assets/theme-config.js"></script>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+
+    /* Custom scrollbar for results area */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #464554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #908fa0; }
+
+    .glass-card {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Slider styling */
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #c0c1ff;
+        cursor: pointer;
+        margin-top: -6px;
+        box-shadow: 0 0 10px rgba(192, 193, 255, 0.5);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #464554;
+        border-radius: 2px;
+    }
+    input[type=range]:focus::-webkit-slider-runnable-track {
+        background: #908fa0;
+    }
+</style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen flex flex-col font-body-md text-body-md overflow-x-hidden selection:bg-primary/30">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex items-center justify-between px-gutter max-w-container-max mx-auto h-16 md:left-1/2 md:-translate-x-1/2">
+<a href="../" class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" style="font-variation-settings: 'FILL' 1;">build</span>
+<span class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-2">
+<a href="../tools-hub/" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors duration-150 p-2 rounded-full hover:bg-surface-variant/50 flex items-center gap-1.5">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">grid_view</span>
+<span class="font-label-sm text-label-sm">All Tools</span>
+</a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors duration-150 p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-4 md:px-gutter max-w-container-max mx-auto w-full">
+<!-- Breadcrumb & Header -->
+<div class="mb-margin-md">
+<div class="flex items-center gap-2 text-outline font-label-sm text-label-sm mb-4">
+<span>Generators</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">UUID Generator</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">UUID Generator</h1>
+<p class="text-on-surface-variant mt-2 max-w-2xl">Generate universally unique identifiers instantly. Configure version and quantity for your development needs.</p>
+</div>
+<!-- Tool Interface -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Controls Panel (Left) -->
+<div class="lg:col-span-4 space-y-6">
+<!-- Configuration Card -->
+<div class="glass-card rounded-xl p-6 relative group overflow-hidden">
+<div class="absolute top-0 right-0 p-3 opacity-50">
+<span class="font-label-sm text-label-sm text-secondary bg-secondary/10 px-2 py-1 rounded">CONFIG</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">tune</span> Settings
+                </h3>
+<!-- Version Selector -->
+<div class="mb-8">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-3 uppercase tracking-wider">Version</label>
+<div class="grid grid-cols-2 gap-3">
+<label class="relative cursor-pointer">
+<input class="peer sr-only" name="uuid_version" type="radio" value="v1"/>
+<div class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary/10 hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 text-on-surface">
+<span class="font-label-sm text-label-sm">UUID v1</span>
+</div>
+</label>
+<label class="relative cursor-pointer">
+<input checked="" class="peer sr-only" name="uuid_version" type="radio" value="v4"/>
+<div class="px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-low peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:shadow-[0_0_15px_rgba(192,193,255,0.15)] hover:bg-surface-variant transition-colors flex items-center justify-center gap-2 text-on-surface">
+<span class="font-label-sm text-label-sm">UUID v4</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Quantity Slider -->
+<div class="mb-8">
+<div class="flex justify-between items-center mb-3">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Quantity</label>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-2 py-0.5 rounded" id="quantity_display">10</span>
+</div>
+<input class="w-full" id="quantity_slider" max="100" min="1" type="range" value="10"/>
+<div class="flex justify-between text-outline text-xs mt-2 font-label-sm">
+<span>1</span>
+<span>100</span>
+</div>
+</div>
+<!-- Generate Action -->
+<button class="w-full bg-primary text-on-primary font-headline-lg-mobile text-[16px] font-semibold py-3 rounded-lg hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.2)]" id="generate_btn">
+<span class="material-symbols-outlined">bolt</span> Generate UUIDs
+                </button>
+</div>
+<!-- Info Card -->
+<div class="glass-card rounded-xl p-6 border-l-4 border-l-secondary-fixed">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary-fixed mt-1">info</span>
+<div>
+<h4 class="font-label-sm text-label-sm text-on-surface mb-1">UUID Versions</h4>
+<p class="text-sm text-on-surface-variant leading-relaxed mb-2"><strong>v1:</strong> Time-based. Generates unique IDs based on the current timestamp and MAC address.</p>
+<p class="text-sm text-on-surface-variant leading-relaxed"><strong>v4:</strong> Random. Generates unique IDs based on random numbers. Highly recommended for most use cases.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Results Panel (Right) -->
+<div class="lg:col-span-8 flex flex-col">
+<div class="glass-card rounded-xl flex-1 flex flex-col overflow-hidden relative">
+<!-- Results Header -->
+<div class="border-b border-white/10 p-4 bg-surface-container-low flex justify-between items-center z-10">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">data_object</span> OUTPUT
+                    </h3>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-md border border-white/20 text-on-surface-variant hover:bg-white/5 transition-colors font-label-sm text-label-sm flex items-center gap-1" id="clear_btn">
+<span class="material-symbols-outlined text-[14px]">clear_all</span> Clear
+                        </button>
+<button class="px-3 py-1.5 rounded-md bg-secondary-container text-on-secondary-container hover:bg-secondary-fixed transition-colors font-label-sm text-label-sm flex items-center gap-1" id="copy_all_btn">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Copy All
+                        </button>
+</div>
+</div>
+<!-- Results Display -->
+<div class="flex-1 bg-[#1E293B]/50 p-6 relative group h-[400px] lg:h-auto overflow-hidden">
+<!-- Watermark/Empty State -->
+<div class="absolute inset-0 flex flex-col items-center justify-center opacity-30 hidden" id="empty_state">
+<span class="material-symbols-outlined text-6xl text-outline mb-2">fingerprint</span>
+<p class="font-label-sm text-label-sm text-outline">Awaiting Generation...</p>
+</div>
+<!-- Scrollable Results -->
+<div class="h-full overflow-y-auto pr-2 space-y-2 font-label-sm text-label-sm text-on-surface" id="results_container"></div>
+</div>
+<!-- Status bar -->
+<div class="border-t border-white/10 p-2 bg-surface-container-low text-xs text-outline font-label-sm flex justify-between px-4">
+<span id="status_message">Ready</span>
+<span id="count_indicator">0 items</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto text-on-surface-variant dark:text-on-surface-variant font-label-sm text-label-sm opacity-80 hover:opacity-100 transition-opacity">
+<div class="font-bold text-on-surface mb-4 md:mb-0">
+            © 2026 TL - Tools Library. Professional Utility Suite.
+        </div>
+<ul class="flex gap-6">
+<li><a class="hover:text-secondary transition-colors" href="#">Documentation</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Open Source</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Privacy</a></li>
+<li><a class="hover:text-secondary transition-colors" href="#">Terms</a></li>
+</ul>
+</footer>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const toast = document.getElementById('toast');
+
+    const slider = document.getElementById('quantity_slider');
+    const display = document.getElementById('quantity_display');
+    const generateBtn = document.getElementById('generate_btn');
+    const clearBtn = document.getElementById('clear_btn');
+    const resultsContainer = document.getElementById('results_container');
+    const emptyState = document.getElementById('empty_state');
+    const statusMessage = document.getElementById('status_message');
+    const countIndicator = document.getElementById('count_indicator');
+    const copyAllBtn = document.getElementById('copy_all_btn');
+
+    let currentUUIDs = [];
+
+    /* ---------- Toast ---------- */
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    /* ---------- Random byte helper (with Math.random fallback) ---------- */
+    function getRandomBytes(n) {
+        const arr = new Uint8Array(n);
+        if (window.crypto && typeof crypto.getRandomValues === 'function') {
+            crypto.getRandomValues(arr);
+        } else {
+            for (let i = 0; i < n; i++) arr[i] = Math.floor(Math.random() * 256);
+        }
+        return arr;
+    }
+
+    function toHex(n, len) {
+        return n.toString(16).padStart(len, '0');
+    }
+
+    /* ---------- UUID v4 (RFC4122 random) ---------- */
+    function uuidv4() {
+        if (window.crypto && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        // Manual crypto.getRandomValues-based fallback
+        const bytes = getRandomBytes(16);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40; // version 4
+        bytes[8] = (bytes[8] & 0x3f) | 0x80; // variant 10
+        const hex = Array.from(bytes, b => toHex(b, 2));
+        return (
+            hex.slice(0, 4).join('') + '-' +
+            hex.slice(4, 6).join('') + '-' +
+            hex.slice(6, 8).join('') + '-' +
+            hex.slice(8, 10).join('') + '-' +
+            hex.slice(10, 16).join('')
+        );
+    }
+
+    /* ---------- UUID v1 (RFC4122 time-based) ---------- */
+    // Browsers have no access to a real MAC address, so a random 48-bit
+    // node id (with the multicast bit set, per RFC4122 recommendation for
+    // implementations lacking a real IEEE 802 address) is generated once
+    // per page load and reused for every v1 UUID produced in this session.
+    const GREGORIAN_OFFSET_MS = 12219292800000n; // ms between 1582-10-15 and 1970-01-01
+    let v1LastMSecs = 0;
+    let v1NSecCounter = 0;
+    let v1ClockSeq = null;
+    let v1Node = null;
+
+    function uuidv1() {
+        let msecs = Date.now();
+
+        if (v1ClockSeq === null) {
+            const seedBytes = getRandomBytes(2);
+            v1ClockSeq = ((seedBytes[0] << 8) | seedBytes[1]) & 0x3fff;
+        }
+        if (v1Node === null) {
+            const nodeBytes = getRandomBytes(6);
+            nodeBytes[0] |= 0x01; // multicast bit -> not a real MAC address
+            v1Node = nodeBytes;
+        }
+
+        if (msecs === v1LastMSecs) {
+            v1NSecCounter++;
+            if (v1NSecCounter >= 10000) {
+                // exhausted the 100ns slots available within this millisecond
+                msecs++;
+                v1NSecCounter = 0;
+            }
+        } else {
+            v1NSecCounter = 0;
+        }
+        v1LastMSecs = msecs;
+
+        const t = (BigInt(msecs) + GREGORIAN_OFFSET_MS) * 10000n + BigInt(v1NSecCounter);
+
+        const timeLow = Number(t & 0xffffffffn);
+        const timeMid = Number((t >> 32n) & 0xffffn);
+        const timeHiAndVersion = Number((t >> 48n) & 0x0fffn) | 0x1000; // version 1
+
+        const clockSeqHiAndReserved = ((v1ClockSeq >> 8) & 0x3f) | 0x80; // variant 10
+        const clockSeqLow = v1ClockSeq & 0xff;
+        const nodeHex = Array.from(v1Node, b => toHex(b, 2)).join('');
+
+        return [
+            toHex(timeLow, 8),
+            toHex(timeMid, 4),
+            toHex(timeHiAndVersion, 4),
+            toHex(clockSeqHiAndReserved, 2) + toHex(clockSeqLow, 2),
+            nodeHex
+        ].join('-');
+    }
+
+    function generateOne(version) {
+        return version === 'v1' ? uuidv1() : uuidv4();
+    }
+
+    function generateBatch(count, version) {
+        const list = [];
+        for (let i = 0; i < count; i++) list.push(generateOne(version));
+        return list;
+    }
+
+    /* ---------- Rendering ---------- */
+    function rowMarkup(uuid) {
+        return (
+            '<div class="flex justify-between items-center p-2 rounded hover:bg-surface-variant/50 group/item transition-colors" data-uuid="' + uuid + '">' +
+                '<span>' + uuid + '</span>' +
+                '<button class="opacity-0 group-hover/item:opacity-100 text-outline hover:text-primary transition-opacity" title="Copy" data-copy-row>' +
+                    '<span class="material-symbols-outlined text-[16px]">content_copy</span>' +
+                '</button>' +
+            '</div>'
+        );
+    }
+
+    function renderResults(list) {
+        currentUUIDs = list;
+        if (list.length === 0) {
+            resultsContainer.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            countIndicator.textContent = '0 items';
+            return;
+        }
+        emptyState.classList.add('hidden');
+        resultsContainer.innerHTML = list.map(rowMarkup).join('');
+        countIndicator.textContent = list.length + ' item' + (list.length === 1 ? '' : 's');
+    }
+
+    /* ---------- Copy helpers ---------- */
+    async function copyText(text) {
+        if (!text) return false;
+        try {
+            await navigator.clipboard.writeText(text);
+            return true;
+        } catch (e) {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                return true;
+            } catch (e2) {
+                return false;
+            }
+        }
+    }
+
+    /* Per-row copy via event delegation */
+    resultsContainer.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-copy-row]');
+        if (!btn) return;
+        const row = btn.closest('[data-uuid]');
+        if (!row) return;
+        const ok = await copyText(row.dataset.uuid);
+        if (ok) {
+            showToast('UUID copied to clipboard');
+            const iconSpan = btn.querySelector('.material-symbols-outlined');
+            const original = iconSpan.textContent;
+            iconSpan.textContent = 'check';
+            setTimeout(() => { iconSpan.textContent = original; }, 1200);
+        } else {
+            showToast('Copy failed');
+        }
+    });
+
+    /* ---------- Slider ---------- */
+    slider.addEventListener('input', (e) => {
+        display.textContent = e.target.value;
+    });
+
+    /* ---------- Generate ---------- */
+    function currentVersion() {
+        const el = document.querySelector('input[name="uuid_version"]:checked');
+        return el ? el.value : 'v4';
+    }
+
+    function runGenerate() {
+        const count = parseInt(slider.value, 10) || 1;
+        const version = currentVersion();
+
+        generateBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Generating...';
+        generateBtn.disabled = true;
+
+        setTimeout(() => {
+            const list = generateBatch(count, version);
+            renderResults(list);
+
+            statusMessage.innerHTML =
+                '<span class="text-secondary flex items-center gap-1">' +
+                    '<span class="material-symbols-outlined text-[14px]">check_circle</span> ' +
+                    'Generated ' + count + ' UUID ' + version + (count === 1 ? '' : 's') +
+                '</span>';
+
+            generateBtn.innerHTML = '<span class="material-symbols-outlined">bolt</span> Generate UUIDs';
+            generateBtn.disabled = false;
+        }, 300);
+    }
+
+    generateBtn.addEventListener('click', runGenerate);
+
+    /* ---------- Clear ---------- */
+    clearBtn.addEventListener('click', () => {
+        renderResults([]);
+        statusMessage.textContent = 'Cleared';
+    });
+
+    /* ---------- Copy All ---------- */
+    copyAllBtn.addEventListener('click', async () => {
+        if (currentUUIDs.length === 0) {
+            showToast('Nothing to copy');
+            return;
+        }
+        const ok = await copyText(currentUUIDs.join('\n'));
+        if (ok) {
+            const original = copyAllBtn.innerHTML;
+            copyAllBtn.innerHTML = '<span class="material-symbols-outlined text-[14px]">check</span> Copied!';
+            statusMessage.textContent = 'All UUIDs copied to clipboard';
+            showToast(currentUUIDs.length + ' UUIDs copied to clipboard');
+            setTimeout(() => { copyAllBtn.innerHTML = original; }, 2000);
+        } else {
+            showToast('Copy failed');
+        }
+    });
+
+    /* ---------- Initial paint: populate with a real generated batch ---------- */
+    display.textContent = slider.value;
+    renderResults(generateBatch(parseInt(slider.value, 10) || 10, currentVersion()));
+    statusMessage.textContent = 'Ready';
+})();
+</script>
+</body></html>
