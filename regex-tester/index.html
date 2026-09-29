@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Regex Tester - TL Engine</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="../assets/theme-config.js"></script>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .regex-highlight {
+            background-color: rgba(78, 222, 163, 0.2);
+            border-bottom: 2px solid #4edea3;
+        }
+        .regex-group-1 { background-color: rgba(128, 131, 255, 0.2); border-bottom: 2px solid #8083ff; }
+        .regex-group-2 { background-color: rgba(255, 185, 95, 0.2); border-bottom: 2px solid #ffb95f; }
+
+        /* Ambient Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% -20%, rgba(192, 193, 255, 0.05) 0%, rgba(11, 19, 38, 0) 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Underlay scroll sync helper */
+        #highlightUnderlay { overflow: auto; }
+        #highlightUnderlay::-webkit-scrollbar { display: none; }
+        #highlightUnderlay { scrollbar-width: none; -ms-overflow-style: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex items-center justify-between px-gutter max-w-container-max mx-auto h-16 left-0 right-0">
+<div class="flex items-center gap-4">
+<a href="../" class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="build">build</span>
+                Tools Library
+            </a>
+</div>
+<div class="flex items-center gap-4">
+<a href="../tools-hub/" class="flex items-center gap-2 px-4 text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors h-10 rounded-full hover:bg-surface-variant/50 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="grid_view">grid_view</span>
+                All Tools
+            </a>
+<button id="searchBtn" class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors flex items-center justify-center h-10 w-10 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<main class="pt-16 p-gutter max-w-container-max mx-auto w-full mb-32 flex flex-col gap-gutter">
+<header class="mb-margin-sm">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2 py-1 bg-surface-variant text-primary rounded text-xs font-label-sm tracking-wider uppercase">Generator</span>
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg">Regex Tester</h1>
+</div>
+<p class="text-on-surface-variant text-lg max-w-2xl">A professional environment for testing and debugging Regular Expressions in real-time.</p>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left Column: Testing Canvas -->
+<div class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- Regex Input -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex justify-between">
+                            Regular Expression
+                            <span class="text-primary-fixed">ECMAScript (JS)</span>
+</label>
+<div id="regexInputRow" class="flex items-center bg-[#1E293B] border border-outline-variant rounded-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<span class="pl-4 text-on-surface-variant text-xl font-label-sm">/</span>
+<input id="regexPattern" class="w-full bg-transparent border-none text-on-surface font-label-sm text-base py-4 px-2 focus:ring-0" placeholder="Enter regex..." type="text" value="([a-zA-Z0-9._-]+)@([a-zA-Z0-9._-]+)\.([a-zA-Z0-9_-]+)" spellcheck="false" autocomplete="off"/>
+<span class="px-2 text-on-surface-variant text-xl font-label-sm">/</span>
+<input id="regexFlags" class="w-16 bg-transparent border-l border-outline-variant text-secondary font-label-sm text-base py-4 px-4 focus:ring-0 text-center" placeholder="flags" type="text" value="g" spellcheck="false" autocomplete="off" maxlength="6"/>
+</div>
+<div id="regexError" class="hidden items-start gap-2 text-error text-xs bg-error-container/10 border border-error/30 rounded-lg p-3 relative z-10">
+<span class="material-symbols-outlined text-[16px] mt-0.5" data-icon="error">error</span>
+<span id="regexErrorMessage" class="font-label-sm leading-relaxed"></span>
+</div>
+</div>
+<!-- Test String -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex justify-between">
+                            Test String
+                            <span id="matchCountLabel" class="text-outline">Matches: 0</span>
+</label>
+<div class="relative">
+<!-- Underlay for highlights -->
+<div id="highlightUnderlay" aria-hidden="true" class="absolute inset-0 bg-[#1E293B] border border-outline-variant rounded-lg p-4 font-label-sm text-base whitespace-pre-wrap break-words text-transparent pointer-events-none z-0"></div>
+<!-- Actual editable text area -->
+<textarea id="testString" spellcheck="false" class="w-full h-48 bg-transparent border border-outline-variant rounded-lg text-on-surface font-label-sm text-base p-4 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y z-10 relative bg-opacity-0" placeholder="Enter test string...">Please contact support@tl-engine.com for assistance, or reach out directly to admin@system.net if it's urgent.</textarea>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar / Results -->
+<div class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Match Information -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 h-full">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant pb-3 mb-2 flex items-center justify-between">
+                Match Results
+                <button id="copyMatchesBtn" class="normal-case tracking-normal text-on-surface-variant hover:text-primary transition-colors" title="Copy matches to clipboard">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+</button>
+</h3>
+<div id="matchResultsList" class="flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-2">
+</div>
+</div>
+<!-- Quick Reference / Cheat Sheet -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<div class="flex justify-between items-center border-b border-outline-variant pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Cheat Sheet</h3>
+<button class="text-primary hover:text-primary-fixed transition-colors text-xs font-label-sm">View All</button>
+</div>
+<ul id="cheatSheetList" class="flex flex-col gap-2">
+<li class="flex justify-between items-center group cursor-pointer" data-snippet="\d">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">\d</span>
+<span class="text-sm text-on-surface-variant">Any Digit</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer" data-snippet="\w">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">\w</span>
+<span class="text-sm text-on-surface-variant">Any Word Character</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer" data-snippet="^...$">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">^...$</span>
+<span class="text-sm text-on-surface-variant">Starts / Ends With</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer" data-snippet="[a-z]">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">[a-z]</span>
+<span class="text-sm text-on-surface-variant">Character Set</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto z-10 relative">
+<div class="font-label-sm font-bold text-on-surface mb-4 md:mb-0 opacity-80 hover:opacity-100 transition-opacity">
+            © 2026 TL - Tools Library. Professional Utility Suite.
+        </div>
+<ul class="flex gap-6 font-label-sm text-label-sm">
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Documentation</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Open Source</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a></li>
+</ul>
+</footer>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const patternInput = document.getElementById('regexPattern');
+    const flagsInput = document.getElementById('regexFlags');
+    const testStringInput = document.getElementById('testString');
+    const highlightUnderlay = document.getElementById('highlightUnderlay');
+    const matchCountLabel = document.getElementById('matchCountLabel');
+    const matchResultsList = document.getElementById('matchResultsList');
+    const regexError = document.getElementById('regexError');
+    const regexErrorMessage = document.getElementById('regexErrorMessage');
+    const regexInputRow = document.getElementById('regexInputRow');
+    const copyMatchesBtn = document.getElementById('copyMatchesBtn');
+    const cheatSheetList = document.getElementById('cheatSheetList');
+    const toast = document.getElementById('toast');
+
+    let lastMatches = [];
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function setRegexValidity(valid) {
+        if (valid) {
+            regexError.classList.add('hidden');
+            regexError.classList.remove('flex');
+            regexInputRow.classList.remove('border-error');
+        } else {
+            regexError.classList.remove('hidden');
+            regexError.classList.add('flex');
+            regexInputRow.classList.add('border-error');
+        }
+    }
+
+    // Build a RegExp from the pattern/flags, throwing on invalid input.
+    function compileRegex(pattern, flags) {
+        // Validate against exactly what the user typed first, so error
+        // messages reflect their actual input (bad flag chars, dup flags, etc).
+        new RegExp(pattern, flags);
+
+        // Build a scanning copy that always has the "g" flag (so we can
+        // walk every match) and, where supported, the "d" flag so we get
+        // per-capture-group character offsets for nested highlighting.
+        let scanFlags = flags.indexOf('g') === -1 ? flags + 'g' : flags;
+        try {
+            const withIndices = scanFlags.indexOf('d') === -1 ? scanFlags + 'd' : scanFlags;
+            return new RegExp(pattern, withIndices);
+        } catch (e) {
+            return new RegExp(pattern, scanFlags);
+        }
+    }
+
+    function findMatches(regex, text) {
+        const matches = [];
+        let m;
+        let guard = 0;
+        while ((m = regex.exec(text)) !== null && guard < 20000) {
+            matches.push(m);
+            if (m[0].length === 0) {
+                regex.lastIndex += 1;
+            }
+            guard += 1;
+        }
+        return matches;
+    }
+
+    // Colour classes mirror the two accent tokens defined for group highlighting
+    // in the test-string underlay; the results panel also cycles a 3rd
+    // "plain" tone (on-surface) for groups beyond the first two.
+    function groupHighlightClass(groupIndex) {
+        if (groupIndex === 1) return 'regex-group-1';
+        if (groupIndex === 2) return 'regex-group-2';
+        return null;
+    }
+    function groupTextClass(groupIndex) {
+        if (groupIndex === 1) return 'text-primary-fixed';
+        if (groupIndex === 2) return 'text-tertiary-fixed-dim';
+        return 'text-on-surface';
+    }
+
+    function buildMatchInnerHtml(text, start, end, groupRanges) {
+        let html = '';
+        let pos = start;
+        const sorted = groupRanges.slice().sort(function (a, b) {
+            return a.start - b.start || (b.end - b.start) - (a.end - a.start);
+        });
+        for (let i = 0; i < sorted.length; i++) {
+            const g = sorted[i];
+            if (g.start < pos || g.end > end || g.start >= g.end) continue;
+            const cls = groupHighlightClass(g.idx);
+            html += escapeHtml(text.slice(pos, g.start));
+            if (cls) {
+                html += '<span class="' + cls + '">' + escapeHtml(text.slice(g.start, g.end)) + '</span>';
+            } else {
+                html += escapeHtml(text.slice(g.start, g.end));
+            }
+            pos = g.end;
+        }
+        html += escapeHtml(text.slice(pos, end));
+        return html;
+    }
+
+    function renderHighlightedText(text, matches) {
+        if (!matches.length) {
+            return escapeHtml(text);
+        }
+        let html = '';
+        let cursor = 0;
+        for (let i = 0; i < matches.length; i++) {
+            const m = matches[i];
+            const start = m.index;
+            const end = start + m[0].length;
+            html += escapeHtml(text.slice(cursor, start));
+
+            const groupRanges = [];
+            if (m.indices && m.indices.length > 1) {
+                for (let gi = 1; gi < m.indices.length; gi++) {
+                    const range = m.indices[gi];
+                    if (range) groupRanges.push({ start: range[0], end: range[1], idx: gi });
+                }
+            }
+            const inner = buildMatchInnerHtml(text, start, end, groupRanges);
+            html += '<span class="regex-highlight">' + inner + '</span>';
+            cursor = end;
+        }
+        html += escapeHtml(text.slice(cursor));
+        return html;
+    }
+
+    function renderMatchList(matches) {
+        if (!matches.length) {
+            matchResultsList.innerHTML = '<div class="text-on-surface-variant text-sm text-center py-8">No matches found.</div>';
+            return;
+        }
+
+        let html = '';
+        for (let i = 0; i < matches.length; i++) {
+            const m = matches[i];
+            const start = m.index;
+            const end = start + m[0].length;
+            html += '<div class="bg-surface-container-highest rounded-lg p-3 border border-outline-variant">';
+            html += '<div class="flex justify-between items-center mb-2">';
+            html += '<span class="font-label-sm text-xs text-secondary">Match ' + (i + 1) + '</span>';
+            html += '<span class="font-label-sm text-xs text-outline">' + start + '-' + end + '</span>';
+            html += '</div>';
+            html += '<div class="font-label-sm text-sm text-on-surface break-all mb-3 bg-[#1E293B] p-2 rounded">' + escapeHtml(m[0]) + '</div>';
+
+            if (m.length > 1) {
+                html += '<div class="flex flex-col gap-1 pl-2 border-l-2 border-primary-container/30">';
+                for (let gi = 1; gi < m.length; gi++) {
+                    const val = m[gi];
+                    html += '<div class="flex justify-between">';
+                    html += '<span class="font-label-sm text-xs text-on-surface-variant">Group ' + gi + ':</span>';
+                    html += '<span class="font-label-sm text-xs ' + groupTextClass(gi) + '">' + (val === undefined ? '&mdash;' : escapeHtml(val)) + '</span>';
+                    html += '</div>';
+                }
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+        matchResultsList.innerHTML = html;
+    }
+
+    function syncScroll() {
+        highlightUnderlay.scrollTop = testStringInput.scrollTop;
+        highlightUnderlay.scrollLeft = testStringInput.scrollLeft;
+    }
+
+    function render() {
+        const pattern = patternInput.value;
+        const flags = flagsInput.value;
+        const text = testStringInput.value;
+
+        if (pattern === '') {
+            setRegexValidity(true);
+            lastMatches = [];
+            highlightUnderlay.innerHTML = escapeHtml(text);
+            matchCountLabel.textContent = 'Matches: 0';
+            matchResultsList.innerHTML = '<div class="text-on-surface-variant text-sm text-center py-8">Enter a pattern to see matches.</div>';
+            syncScroll();
+            return;
+        }
+
+        let regex;
+        try {
+            regex = compileRegex(pattern, flags);
+        } catch (err) {
+            setRegexValidity(false);
+            regexErrorMessage.textContent = err.message;
+            lastMatches = [];
+            highlightUnderlay.innerHTML = escapeHtml(text);
+            matchCountLabel.textContent = 'Matches: —';
+            matchResultsList.innerHTML = '<div class="text-on-surface-variant text-sm text-center py-8">Fix the regular expression to see matches.</div>';
+            syncScroll();
+            return;
+        }
+
+        setRegexValidity(true);
+        const matches = findMatches(regex, text);
+        lastMatches = matches;
+
+        matchCountLabel.textContent = 'Matches: ' + matches.length;
+        highlightUnderlay.innerHTML = renderHighlightedText(text, matches);
+        renderMatchList(matches);
+        syncScroll();
+    }
+
+    let debounceTimer;
+    function scheduleRender() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(render, 150);
+    }
+
+    patternInput.addEventListener('input', scheduleRender);
+    flagsInput.addEventListener('input', scheduleRender);
+    testStringInput.addEventListener('input', scheduleRender);
+    testStringInput.addEventListener('scroll', syncScroll);
+    window.addEventListener('resize', syncScroll);
+
+    copyMatchesBtn.addEventListener('click', async function () {
+        if (!lastMatches.length) {
+            showToast('No matches to copy');
+            return;
+        }
+        const lines = lastMatches.map(function (m, i) {
+            let line = 'Match ' + (i + 1) + ' (' + m.index + '-' + (m.index + m[0].length) + '): ' + m[0];
+            for (let gi = 1; gi < m.length; gi++) {
+                line += '\n  Group ' + gi + ': ' + (m[gi] === undefined ? '' : m[gi]);
+            }
+            return line;
+        });
+        const text = lines.join('\n');
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('Matches copied to clipboard');
+        } catch (e) {
+            showToast('Copy failed');
+        }
+    });
+
+    // Cheat sheet: clicking a snippet inserts it into the pattern field.
+    cheatSheetList.querySelectorAll('[data-snippet]').forEach(function (li) {
+        li.addEventListener('click', function () {
+            const snippet = li.getAttribute('data-snippet');
+            const start = patternInput.selectionStart;
+            const end = patternInput.selectionEnd;
+            const hasSelection = typeof start === 'number' && typeof end === 'number';
+            if (hasSelection && document.activeElement === patternInput) {
+                patternInput.value = patternInput.value.slice(0, start) + snippet + patternInput.value.slice(end);
+                patternInput.focus();
+                const caret = start + snippet.length;
+                patternInput.setSelectionRange(caret, caret);
+            } else {
+                patternInput.value += snippet;
+                patternInput.focus();
+            }
+            render();
+        });
+    });
+
+    // Initial paint
+    render();
+})();
+</script>
+</body></html>

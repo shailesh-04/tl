@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Regex Tester - TL Engine</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface-variant": "#c7c4d7",
+                      "on-secondary-fixed-variant": "#005236",
+                      "surface-dim": "#0b1326",
+                      "surface-container-high": "#222a3d",
+                      "primary-fixed": "#e1e0ff",
+                      "inverse-primary": "#494bd6",
+                      "on-secondary-container": "#00311f",
+                      "tertiary-fixed-dim": "#ffb95f",
+                      "on-error-container": "#ffdad6",
+                      "on-surface": "#dae2fd",
+                      "error-container": "#93000a",
+                      "secondary": "#4edea3",
+                      "on-primary-container": "#0d0096",
+                      "primary-container": "#8083ff",
+                      "inverse-on-surface": "#283044",
+                      "surface": "#0b1326",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "on-tertiary-fixed-variant": "#653e00",
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "on-tertiary-fixed": "#2a1700",
+                      "outline": "#908fa0",
+                      "on-tertiary-container": "#3e2400",
+                      "on-secondary": "#003824",
+                      "on-primary-fixed": "#07006c",
+                      "tertiary": "#ffb95f",
+                      "secondary-fixed-dim": "#4edea3",
+                      "on-tertiary": "#472a00",
+                      "outline-variant": "#464554",
+                      "error": "#ffb4ab",
+                      "secondary-fixed": "#6ffbbe",
+                      "surface-container-low": "#131b2e",
+                      "surface-container-highest": "#2d3449",
+                      "surface-bright": "#31394d",
+                      "surface-tint": "#c0c1ff",
+                      "on-background": "#dae2fd",
+                      "secondary-container": "#00a572",
+                      "surface-variant": "#2d3449",
+                      "on-secondary-fixed": "#002113",
+                      "inverse-surface": "#dae2fd",
+                      "primary": "#c0c1ff",
+                      "on-error": "#690005",
+                      "tertiary-container": "#ca8100",
+                      "on-primary": "#1000a9",
+                      "tertiary-fixed": "#ffddb8",
+                      "surface-container": "#171f33",
+                      "background": "#0b1326",
+                      "surface-container-lowest": "#060e20"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter": "24px",
+                      "container-max": "1280px",
+                      "margin-sm": "16px",
+                      "margin-lg": "80px",
+                      "margin-md": "40px",
+                      "base": "4px"
+              },
+              "fontFamily": {
+                      "headline-lg": [
+                              "Geist"
+                      ],
+                      "label-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "display-lg": [
+                              "Geist"
+                      ],
+                      "body-md": [
+                              "Geist"
+                      ],
+                      "headline-lg-mobile": [
+                              "Geist"
+                      ]
+              },
+              "fontSize": {
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.04em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .regex-highlight {
+            background-color: rgba(78, 222, 163, 0.2);
+            border-bottom: 2px solid #4edea3;
+        }
+        .regex-group-1 { background-color: rgba(128, 131, 255, 0.2); border-bottom: 2px solid #8083ff; }
+        .regex-group-2 { background-color: rgba(255, 185, 95, 0.2); border-bottom: 2px solid #ffb95f; }
+        
+        /* Ambient Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% -20%, rgba(192, 193, 255, 0.05) 0%, rgba(11, 19, 38, 0) 60%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm flex items-center justify-between px-gutter max-w-container-max mx-auto h-16 left-0 right-0">
+<div class="flex items-center gap-4">
+<button class="md:hidden text-primary dark:text-primary-fixed hover:text-primary transition-colors flex items-center justify-center h-10 w-10 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<span class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="build">build</span>
+                Tools Library
+            </span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors flex items-center justify-center h-10 w-10 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<div class="flex flex-1 pt-16">
+<!-- NavigationDrawer -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 border-r border-outline-variant bg-surface-container dark:bg-surface-container overflow-y-auto">
+<div class="p-6 border-b border-surface-container-low mb-4">
+<span class="font-headline-lg text-headline-lg-mobile text-primary">TL Engine</span>
+</div>
+<ul class="flex flex-col gap-2 flex-1">
+<li>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                        All Tools
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="transform">transform</span>
+                        Converters
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 p-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                        Generators
+                    </a>
+</li>
+</ul>
+<div class="mt-auto p-4 border-t border-surface-container-low">
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-all duration-200 ease-in-out font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 lg:ml-64 p-gutter max-w-container-max mx-auto w-full mb-32 flex flex-col gap-gutter">
+<header class="mb-margin-sm">
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2 py-1 bg-surface-variant text-primary rounded text-xs font-label-sm tracking-wider uppercase">Generator</span>
+<h1 class="font-display-lg text-headline-lg-mobile md:text-display-lg">Regex Tester</h1>
+</div>
+<p class="text-on-surface-variant text-lg max-w-2xl">A professional environment for testing and debugging Regular Expressions in real-time.</p>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-gutter">
+<!-- Left Column: Testing Canvas -->
+<div class="xl:col-span-8 flex flex-col gap-gutter">
+<!-- Regex Input -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex justify-between">
+                            Regular Expression
+                            <span class="text-primary-fixed">ECMAScript (JS)</span>
+</label>
+<div class="flex items-center bg-[#1E293B] border border-outline-variant rounded-lg focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<span class="pl-4 text-on-surface-variant text-xl font-label-sm">/</span>
+<input class="w-full bg-transparent border-none text-on-surface font-label-sm text-base py-4 px-2 focus:ring-0" placeholder="Enter regex..." type="text" value="([a-zA-Z0-9._-]+)@([a-zA-Z0-9._-]+)\.([a-zA-Z0-9_-]+)"/>
+<span class="px-2 text-on-surface-variant text-xl font-label-sm">/</span>
+<input class="w-16 bg-transparent border-l border-outline-variant text-secondary font-label-sm text-base py-4 px-4 focus:ring-0 text-center" placeholder="flags" type="text" value="g"/>
+</div>
+</div>
+<!-- Test String -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex justify-between">
+                            Test String
+                            <span class="text-outline">Matches: 2</span>
+</label>
+<div class="relative">
+<!-- Underlay for highlights -->
+<div aria-hidden="true" class="absolute inset-0 bg-[#1E293B] border border-outline-variant rounded-lg p-4 font-label-sm text-base whitespace-pre-wrap break-words text-transparent pointer-events-none z-0">
+                                Please contact <span class="regex-highlight"><span class="regex-group-1">support</span>@<span class="regex-group-2">tl-engine</span>.com</span> for assistance, or reach out directly to <span class="regex-highlight"><span class="regex-group-1">admin</span>@<span class="regex-group-2">system</span>.net</span> if it's urgent.
+                            </div>
+<!-- Actual editable text area -->
+<textarea class="w-full h-48 bg-transparent border border-outline-variant rounded-lg text-on-surface font-label-sm text-base p-4 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all resize-y z-10 relative bg-opacity-0" placeholder="Enter test string...">Please contact support@tl-engine.com for assistance, or reach out directly to admin@system.net if it's urgent.</textarea>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar / Results -->
+<div class="xl:col-span-4 flex flex-col gap-gutter">
+<!-- Match Information -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 h-full">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider border-b border-outline-variant pb-3 mb-2">Match Results</h3>
+<div class="flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-2">
+<!-- Match 1 -->
+<div class="bg-surface-container-highest rounded-lg p-3 border border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-xs text-secondary">Match 1</span>
+<span class="font-label-sm text-xs text-outline">15-35</span>
+</div>
+<div class="font-label-sm text-sm text-on-surface break-all mb-3 bg-[#1E293B] p-2 rounded">support@tl-engine.com</div>
+<div class="flex flex-col gap-1 pl-2 border-l-2 border-primary-container/30">
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 1:</span>
+<span class="font-label-sm text-xs text-primary-fixed">support</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 2:</span>
+<span class="font-label-sm text-xs text-tertiary-fixed-dim">tl-engine</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 3:</span>
+<span class="font-label-sm text-xs text-on-surface">com</span>
+</div>
+</div>
+</div>
+<!-- Match 2 -->
+<div class="bg-surface-container-highest rounded-lg p-3 border border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-sm text-xs text-secondary">Match 2</span>
+<span class="font-label-sm text-xs text-outline">80-96</span>
+</div>
+<div class="font-label-sm text-sm text-on-surface break-all mb-3 bg-[#1E293B] p-2 rounded">admin@system.net</div>
+<div class="flex flex-col gap-1 pl-2 border-l-2 border-primary-container/30">
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 1:</span>
+<span class="font-label-sm text-xs text-primary-fixed">admin</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 2:</span>
+<span class="font-label-sm text-xs text-tertiary-fixed-dim">system</span>
+</div>
+<div class="flex justify-between">
+<span class="font-label-sm text-xs text-on-surface-variant">Group 3:</span>
+<span class="font-label-sm text-xs text-on-surface">net</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Reference / Cheat Sheet -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4">
+<div class="flex justify-between items-center border-b border-outline-variant pb-3">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Cheat Sheet</h3>
+<button class="text-primary hover:text-primary-fixed transition-colors text-xs font-label-sm">View All</button>
+</div>
+<ul class="flex flex-col gap-2">
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">\d</span>
+<span class="text-sm text-on-surface-variant">Any Digit</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">\w</span>
+<span class="text-sm text-on-surface-variant">Any Word Character</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">^...$</span>
+<span class="text-sm text-on-surface-variant">Starts / Ends With</span>
+</li>
+<li class="flex justify-between items-center group cursor-pointer">
+<span class="font-label-sm text-sm text-primary-fixed bg-surface-container px-2 py-1 rounded group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors">[a-z]</span>
+<span class="text-sm text-on-surface-variant">Character Set</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto z-10 relative">
+<div class="font-label-sm font-bold text-on-surface mb-4 md:mb-0 opacity-80 hover:opacity-100 transition-opacity">
+            © 2026 TL - Tools Library. Professional Utility Suite.
+        </div>
+<ul class="flex gap-6 font-label-sm text-label-sm">
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Documentation</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Open Source</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a></li>
+<li><a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a></li>
+</ul>
+</footer>
+</body></html>
