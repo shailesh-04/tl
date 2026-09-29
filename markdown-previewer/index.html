@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Markdown Previewer - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #464554; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #908fa0; }
+</style>
+<script src="../assets/theme-config.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-2">
+<a href="../tools-hub/" class="bg-surface-variant hover:bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg font-label-sm text-label-sm flex items-center gap-2 transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+                        All Tools
+                    </a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full flex flex-col min-h-[calc(100vh-4rem)] pt-16">
+<div class="px-gutter max-w-container-max mx-auto w-full py-margin-md flex-1 flex flex-col">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 md:mb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Markdown Previewer</h1>
+<p class="text-on-surface-variant text-sm mt-1">Live GitHub-flavored markdown editor</p>
+</div>
+<div class="flex items-center gap-2">
+<button id="exportBtn" class="bg-surface-variant hover:bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg font-label-sm text-label-sm flex items-center gap-2 transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        Export
+                    </button>
+<button id="copyHtmlBtn" class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-sm text-label-sm flex items-center gap-2 hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+                        Copy HTML
+                    </button>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="bg-surface-container-highest border border-outline-variant rounded-t-xl p-2 flex flex-wrap gap-1 items-center">
+<button id="tbBold" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Bold">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_bold">format_bold</span>
+</button>
+<button id="tbItalic" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Italic">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_italic">format_italic</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-1"></div>
+<button id="tbQuote" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Quote">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_quote">format_quote</span>
+</button>
+<button id="tbCode" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Code">
+<span class="material-symbols-outlined text-[20px]" data-icon="code">code</span>
+</button>
+<button id="tbLink" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Link">
+<span class="material-symbols-outlined text-[20px]" data-icon="link">link</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-1"></div>
+<button id="tbUl" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Bulleted List">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_bulleted">format_list_bulleted</span>
+</button>
+<button id="tbOl" class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Numbered List">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_numbered">format_list_numbered</span>
+</button>
+</div>
+<!-- Editor/Preview Split -->
+<div class="flex-1 flex flex-col md:flex-row gap-4 border border-t-0 border-outline-variant rounded-b-xl bg-surface-container overflow-hidden min-h-[500px]">
+<!-- Editor Pane -->
+<div class="flex-1 flex flex-col min-h-[300px] md:min-h-0 border-b md:border-b-0 md:border-r border-outline-variant">
+<div class="bg-surface-container-low px-4 py-2 border-b border-outline-variant flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Markdown</span>
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] text-tertiary-fixed-dim font-label-sm">RAW</span>
+</div>
+<textarea id="mdInput" spellcheck="false" class="flex-1 w-full p-4 bg-transparent text-on-surface font-label-sm text-sm resize-none focus:outline-none focus:ring-0 border-none" placeholder="Enter markdown here..."># Markdown Previewer
+
+Welcome to the **Tools Library** markdown previewer.
+
+## Features
+* Live preview
+* GitHub-flavored markdown support
+* Clean, distraction-free interface
+
+### Code Example</textarea>
+</div>
+<!-- Preview Pane -->
+<div class="flex-1 flex flex-col min-h-[300px] md:min-h-0">
+<div class="bg-surface-container-low px-4 py-2 border-b border-outline-variant flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Preview</span>
+<span class="px-2 py-1 bg-secondary-container/20 border border-secondary/30 rounded text-[10px] text-secondary font-label-sm">HTML</span>
+</div>
+<div id="mdPreview" class="flex-1 w-full p-4 overflow-auto text-on-surface text-sm"></div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto opacity-80 hover:opacity-100 transition-opacity">
+<div class="mb-4 md:mb-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const mdInput = document.getElementById('mdInput');
+    const mdPreview = document.getElementById('mdPreview');
+    const exportBtn = document.getElementById('exportBtn');
+    const copyHtmlBtn = document.getElementById('copyHtmlBtn');
+    const tbBold = document.getElementById('tbBold');
+    const tbItalic = document.getElementById('tbItalic');
+    const tbQuote = document.getElementById('tbQuote');
+    const tbCode = document.getElementById('tbCode');
+    const tbLink = document.getElementById('tbLink');
+    const tbUl = document.getElementById('tbUl');
+    const tbOl = document.getElementById('tbOl');
+    const toast = document.getElementById('toast');
+
+    let currentHtml = '';
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+    }
+
+    /* ---------------------------------------------------------------
+     * SECURITY: raw markdown source is HTML-escaped BEFORE any
+     * markdown-to-HTML transformation runs. Only tags/attributes that
+     * OUR converter deliberately emits below can ever reach innerHTML,
+     * so pasted markup such as an inline "alert(1)" wrapped in a
+     * script element is neutralized to inert text and can never execute.
+     * ------------------------------------------------------------- */
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    function escapeAttr(str) {
+        return String(str).replace(/"/g, '&quot;');
+    }
+    function sanitizeUrl(url) {
+        const trimmed = (url || '').trim();
+        if (/^\s*javascript:/i.test(trimmed) || /^\s*data:text\/html/i.test(trimmed)) return '#';
+        return trimmed;
+    }
+
+    function splitUrlTitle(raw) {
+        const m = raw.match(/^(\S+)\s+"([^"]*)"$/);
+        if (m) return { url: m[1], title: m[2] };
+        return { url: raw, title: '' };
+    }
+
+    /* ---- Inline-level rendering: code, images, links, bold, italic ---- */
+    function renderInline(text) {
+        const codeSpans = [];
+        text = text.replace(/`([^`]+)`/g, function (m, code) {
+            codeSpans.push('<code class="bg-surface-variant text-tertiary-fixed-dim px-1.5 py-0.5 rounded text-[0.85em] font-label-sm">' + code + '</code>');
+            return ' CODE' + (codeSpans.length - 1) + ' ';
+        });
+
+        text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (m, alt, raw) {
+            const parsed = splitUrlTitle(raw);
+            const safeUrl = escapeAttr(sanitizeUrl(parsed.url));
+            const safeAlt = escapeAttr(alt);
+            const t = parsed.title ? ' title="' + escapeAttr(parsed.title) + '"' : '';
+            return '<img src="' + safeUrl + '" alt="' + safeAlt + '"' + t + ' class="max-w-full h-auto rounded-lg my-2 border border-outline-variant" />';
+        });
+
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (m, label, raw) {
+            const parsed = splitUrlTitle(raw);
+            const safeUrl = escapeAttr(sanitizeUrl(parsed.url));
+            const t = parsed.title ? ' title="' + escapeAttr(parsed.title) + '"' : '';
+            return '<a href="' + safeUrl + '"' + t + ' class="text-primary-fixed-dim underline hover:text-primary transition-colors" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+        });
+
+        text = text.replace(/(\*\*|__)(?=\S)([\s\S]*?\S)\1/g, '<strong>$2</strong>');
+        text = text.replace(/(\*|_)(?=\S)([\s\S]*?\S)\1/g, '<em>$2</em>');
+
+        text = text.replace(/ CODE(\d+) /g, function (m, i) { return codeSpans[+i]; });
+        return text;
+    }
+
+    const HEADING_CLASS = {
+        1: 'text-2xl font-bold text-on-surface mt-6 mb-4 pb-2 border-b border-outline-variant/50 first:mt-0',
+        2: 'text-xl font-bold text-on-surface mt-6 mb-3 pb-1 border-b border-outline-variant/30 first:mt-0',
+        3: 'text-lg font-semibold text-on-surface mt-5 mb-2 first:mt-0',
+        4: 'text-base font-semibold text-on-surface mt-4 mb-2 first:mt-0',
+        5: 'text-sm font-semibold text-on-surface-variant uppercase tracking-wide mt-4 mb-2 first:mt-0',
+        6: 'text-xs font-semibold text-on-surface-variant uppercase tracking-wide mt-4 mb-2 first:mt-0'
+    };
+
+    /* ---- Block-level parsing: headers, lists, quotes, code fences, hr, paragraphs ---- */
+    function markdownToHtml(raw) {
+        const escaped = escapeHtml(raw).replace(/\r\n?/g, '\n');
+        const lines = escaped.split('\n');
+        const out = [];
+
+        let inCode = false;
+        let codeLines = [];
+        let paragraph = [];
+        let list = null; // { type: 'ul' | 'ol', items: [] }
+        let quote = null; // array of raw (escaped) lines
+
+        function flushParagraph() {
+            if (paragraph.length) {
+                out.push('<p class="mb-4 leading-relaxed last:mb-0">' + renderInline(paragraph.join(' ')) + '</p>');
+                paragraph = [];
+            }
+        }
+        function flushList() {
+            if (list) {
+                const cls = list.type === 'ul' ? 'list-disc' : 'list-decimal';
+                out.push('<' + list.type + ' class="' + cls + ' pl-6 mb-4 space-y-1 marker:text-primary-fixed-dim">' +
+                    list.items.map(function (it) { return '<li>' + renderInline(it) + '</li>'; }).join('') +
+                    '</' + list.type + '>');
+                list = null;
+            }
+        }
+        function flushQuote() {
+            if (quote) {
+                out.push('<blockquote class="border-l-4 border-primary/40 pl-4 italic text-on-surface-variant mb-4">' +
+                    quote.map(function (l) { return renderInline(l); }).join('<br>') +
+                    '</blockquote>');
+                quote = null;
+            }
+        }
+        function flushAll() { flushParagraph(); flushList(); flushQuote(); }
+
+        for (let idx = 0; idx < lines.length; idx++) {
+            const line = lines[idx];
+            const fence = line.match(/^\s*```(.*)$/);
+
+            if (inCode) {
+                if (fence) {
+                    out.push('<pre class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 overflow-x-auto mb-4 text-sm font-label-sm text-on-surface"><code>' + codeLines.join('\n') + '</code></pre>');
+                    inCode = false;
+                    codeLines = [];
+                } else {
+                    codeLines.push(line);
+                }
+                continue;
+            }
+            if (fence) {
+                flushAll();
+                inCode = true;
+                continue;
+            }
+
+            if (line.trim() === '') { flushAll(); continue; }
+
+            if (/^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
+                flushAll();
+                out.push('<hr class="border-outline-variant my-6" />');
+                continue;
+            }
+
+            const h = line.match(/^(#{1,6})\s+(.*?)\s*#*\s*$/);
+            if (h) {
+                flushAll();
+                const level = h[1].length;
+                out.push('<h' + level + ' class="' + HEADING_CLASS[level] + '">' + renderInline(h[2]) + '</h' + level + '>');
+                continue;
+            }
+
+            const q = line.match(/^\s*&gt;\s?(.*)$/);
+            if (q) {
+                flushParagraph();
+                flushList();
+                if (!quote) quote = [];
+                quote.push(q[1]);
+                continue;
+            }
+            flushQuote();
+
+            const ul = line.match(/^\s*[*\-+]\s+(.*)$/);
+            if (ul) {
+                flushParagraph();
+                if (!list || list.type !== 'ul') { flushList(); list = { type: 'ul', items: [] }; }
+                list.items.push(ul[1]);
+                continue;
+            }
+            const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+            if (ol) {
+                flushParagraph();
+                if (!list || list.type !== 'ol') { flushList(); list = { type: 'ol', items: [] }; }
+                list.items.push(ol[1]);
+                continue;
+            }
+            flushList();
+
+            paragraph.push(line.trim());
+        }
+
+        if (inCode) {
+            out.push('<pre class="bg-surface-container-lowest border border-outline-variant rounded-lg p-4 overflow-x-auto mb-4 text-sm font-label-sm text-on-surface"><code>' + codeLines.join('\n') + '</code></pre>');
+        }
+        flushAll();
+
+        return out.join('');
+    }
+
+    function render() {
+        const raw = mdInput.value;
+        if (raw.trim() === '') {
+            currentHtml = '';
+            mdPreview.innerHTML = '<p class="text-on-surface-variant/60 italic text-sm">Nothing to preview yet. Start typing markdown on the left.</p>';
+            return;
+        }
+        currentHtml = markdownToHtml(raw);
+        mdPreview.innerHTML = currentHtml;
+    }
+
+    let debounceTimer;
+    function scheduleRender() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(render, 150);
+    }
+    mdInput.addEventListener('input', scheduleRender);
+
+    /* ---- Toolbar formatting helpers ---- */
+    function wrapSelection(before, after, placeholder) {
+        const start = mdInput.selectionStart;
+        const end = mdInput.selectionEnd;
+        const value = mdInput.value;
+        const selected = value.slice(start, end) || placeholder;
+        mdInput.value = value.slice(0, start) + before + selected + after + value.slice(end);
+        const cursorStart = start + before.length;
+        const cursorEnd = cursorStart + selected.length;
+        mdInput.focus();
+        mdInput.setSelectionRange(cursorStart, cursorEnd);
+        scheduleRender();
+    }
+    function prefixLine(prefix) {
+        const start = mdInput.selectionStart;
+        const value = mdInput.value;
+        const lineStart = value.lastIndexOf('\n', start - 1) + 1;
+        mdInput.value = value.slice(0, lineStart) + prefix + value.slice(lineStart);
+        const pos = start + prefix.length;
+        mdInput.focus();
+        mdInput.setSelectionRange(pos, pos);
+        scheduleRender();
+    }
+
+    tbBold.addEventListener('click', function () { wrapSelection('**', '**', 'bold text'); });
+    tbItalic.addEventListener('click', function () { wrapSelection('*', '*', 'italic text'); });
+    tbCode.addEventListener('click', function () { wrapSelection('`', '`', 'code'); });
+    tbLink.addEventListener('click', function () { wrapSelection('[', '](https://)', 'link text'); });
+    tbQuote.addEventListener('click', function () { prefixLine('> '); });
+    tbUl.addEventListener('click', function () { prefixLine('- '); });
+    tbOl.addEventListener('click', function () { prefixLine('1. '); });
+
+    /* ---- Copy HTML / Export markdown ---- */
+    copyHtmlBtn.addEventListener('click', async function () {
+        if (!currentHtml) {
+            showToast('Nothing to copy');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(currentHtml);
+            showToast('HTML copied to clipboard');
+        } catch (e) {
+            showToast('Copy failed');
+        }
+    });
+
+    exportBtn.addEventListener('click', function () {
+        const raw = mdInput.value;
+        if (!raw.trim()) {
+            showToast('Nothing to export');
+            return;
+        }
+        const blob = new Blob([raw], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'document.md';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Markdown downloaded');
+    });
+
+    // Initial paint
+    render();
+})();
+</script>
+</body></html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Markdown Previewer - TL Engine</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface-variant": "#c7c4d7",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed": "#e1e0ff",
+                        "inverse-primary": "#494bd6",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "secondary": "#4edea3",
+                        "on-primary-container": "#0d0096",
+                        "primary-container": "#8083ff",
+                        "inverse-on-surface": "#283044",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#3e2400",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#07006c",
+                        "tertiary": "#ffb95f",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#472a00",
+                        "outline-variant": "#464554",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "surface-bright": "#31394d",
+                        "surface-tint": "#c0c1ff",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#00a572",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-surface": "#dae2fd",
+                        "primary": "#c0c1ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#ca8100",
+                        "on-primary": "#1000a9",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container": "#171f33",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-sm": "16px",
+                        "margin-lg": "80px",
+                        "margin-md": "40px",
+                        "base": "4px"
+                    },
+                    fontFamily: {
+                        "headline-lg": ["Geist"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Geist"],
+                        "body-md": ["Geist"],
+                        "headline-lg-mobile": ["Geist"]
+                    },
+                    fontSize: {
+                        "headline-lg": ["32px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }],
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "1.2", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom scrollbar for editors */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #464554;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #908fa0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 border-b border-white/10 shadow-sm bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</div>
+<div class="flex items-center gap-4">
+<nav class="hidden md:flex gap-6">
+<a class="text-primary dark:text-primary-fixed border-b-2 border-primary pb-1 font-label-sm text-label-sm uppercase tracking-wider" href="#">All Tools</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors pb-1 font-label-sm text-label-sm uppercase tracking-wider" href="#">Converters</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors pb-1 font-label-sm text-label-sm uppercase tracking-wider" href="#">Generators</a>
+</nav>
+<button class="text-on-surface-variant dark:text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Layout -->
+<div class="flex-1 flex pt-16">
+<!-- NavigationDrawer (Desktop) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface-container dark:bg-surface-container pt-16 z-40">
+<div class="p-6 border-b border-outline-variant/30">
+<h2 class="font-headline-lg text-headline-lg text-primary">TL Engine</h2>
+</div>
+<nav class="flex-1 overflow-y-auto py-4 flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+<span class="font-label-sm text-label-sm">All Tools</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="transform">transform</span>
+<span class="font-label-sm text-label-sm">Converters</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Generators</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg mx-2 mt-auto hover:bg-surface-variant dark:hover:bg-surface-container-high transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 p-4 md:p-gutter flex flex-col h-[calc(100vh-64px)]">
+<!-- Page Header -->
+<div class="flex items-center justify-between mb-4 md:mb-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface">Markdown Previewer</h1>
+<p class="text-on-surface-variant text-sm mt-1">Live GitHub-flavored markdown editor</p>
+</div>
+<div class="flex items-center gap-2">
+<button class="bg-surface-variant hover:bg-surface-container-highest text-on-surface px-4 py-2 rounded-lg font-label-sm text-label-sm flex items-center gap-2 transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        Export
+                    </button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-sm text-label-sm flex items-center gap-2 hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="content_copy">content_copy</span>
+                        Copy HTML
+                    </button>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="bg-surface-container-highest border border-outline-variant rounded-t-xl p-2 flex flex-wrap gap-1 items-center">
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Bold">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_bold">format_bold</span>
+</button>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Italic">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_italic">format_italic</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Quote">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_quote">format_quote</span>
+</button>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Code">
+<span class="material-symbols-outlined text-[20px]" data-icon="code">code</span>
+</button>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Link">
+<span class="material-symbols-outlined text-[20px]" data-icon="link">link</span>
+</button>
+<div class="w-[1px] h-6 bg-outline-variant mx-1"></div>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Bulleted List">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_bulleted">format_list_bulleted</span>
+</button>
+<button class="p-2 hover:bg-surface-variant rounded text-on-surface-variant hover:text-on-surface transition-colors" title="Numbered List">
+<span class="material-symbols-outlined text-[20px]" data-icon="format_list_numbered">format_list_numbered</span>
+</button>
+</div>
+<!-- Editor/Preview Split -->
+<div class="flex-1 flex flex-col md:flex-row gap-4 border border-t-0 border-outline-variant rounded-b-xl bg-surface-container overflow-hidden">
+<!-- Editor Pane -->
+<div class="flex-1 flex flex-col min-h-[300px] md:min-h-0 border-b md:border-b-0 md:border-r border-outline-variant">
+<div class="bg-surface-container-low px-4 py-2 border-b border-outline-variant flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Markdown</span>
+<span class="px-2 py-1 bg-surface-variant rounded text-[10px] text-tertiary-fixed-dim font-label-sm">RAW</span>
+</div>
+<textarea class="flex-1 w-full p-4 bg-transparent text-on-surface font-label-sm text-sm resize-none focus:outline-none focus:ring-0 border-none" placeholder="Enter markdown here..."># Markdown Previewer
+
+Welcome to the **Tools Library** markdown previewer.
+
+## Features
+* Live preview
+* GitHub-flavored markdown support
+* Clean, distraction-free interface
+
+### Code Example</textarea></div></div></main></div></body></html>
