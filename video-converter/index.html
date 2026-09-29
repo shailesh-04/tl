@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Video Converter - Tools Library</title>
+<meta name="description" content="Free online video converter that runs in your browser. Batch convert MP4, WebM, MOV, MKV, AVI to MP4, WebM, MOV, MKV, AVI, GIF or MP3 and download instantly. No uploads."/>
+<link rel="canonical" href="https://shailesh-04.github.io/tl/video-converter/"/>
+<meta name="theme-color" content="#0b1326"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="../assets/theme-config.js"></script>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .drag-active {
+        border-color: #8083ff !important;
+        background: rgba(128, 131, 255, 0.1) !important;
+    }
+    .opt-btn[aria-pressed="true"] {
+        background: #c0c1ff;
+        color: #1000a9;
+        border-color: transparent;
+    }
+    .progress-track { height: 4px; background: #2d3449; border-radius: 2px; overflow: hidden; }
+    .progress-fill { height: 100%; background: #8083ff; width: 0; transition: width .2s ease; }
+    .progress-fill.indeterminate { width: 30% !important; animation: slide 1.2s ease-in-out infinite; }
+    @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(340%); } }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm">
+<div class="flex items-center justify-between px-4 md:px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-[22px] md:text-headline-lg font-bold tracking-tight text-on-surface">Tools Library</span>
+</a>
+<a href="../tools-hub/" class="flex items-center gap-2 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+<span>All Tools</span>
+</a>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full flex flex-col pt-16">
+<div class="px-4 md:px-gutter max-w-[1600px] mx-auto w-full py-margin-md flex-1 flex flex-col">
+<div class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h1 class="font-display-lg text-[40px] md:text-display-lg text-on-surface mb-2">Video Converter</h1>
+<p class="text-on-surface-variant text-body-md max-w-2xl">Convert any number of videos between formats, resize them, or extract the audio. Everything runs in your browser with FFmpeg, so your files are never uploaded.</p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-tertiary-fixed border border-outline-variant">MP4</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-secondary-fixed border border-outline-variant">WEBM</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-tertiary-fixed border border-outline-variant">MOV</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-secondary-fixed border border-outline-variant">MKV</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-tertiary-fixed border border-outline-variant">GIF</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Upload & Settings -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Upload Zone -->
+<div class="glass-panel rounded-xl p-8 border-dashed border-2 border-outline hover:border-primary-container transition-all duration-300 flex flex-col items-center justify-center text-center h-56 relative group cursor-pointer" id="drop-zone">
+<input accept="video/*,.mkv,.avi,.mov,.flv,.wmv,.3gp,.m4v,.ts,.mts,.mpeg,.mpg,.ogv" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" id="file-input" multiple="" type="file" aria-label="Choose video files"/>
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-lg">
+<span class="material-symbols-outlined text-3xl" data-icon="video_library">video_library</span>
+</div>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Drag &amp; Drop Videos</p>
+<p class="text-on-surface-variant font-label-sm text-label-sm">or click to browse · add as many as you like</p>
+</div>
+<!-- Settings Panel -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface border-b border-outline-variant pb-2">Conversion Settings</h2>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant mb-2 block">Output Format</label>
+<div class="grid grid-cols-4 gap-2" id="format-group">
+<button type="button" data-value="mp4" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">MP4</button>
+<button type="button" data-value="webm" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">WEBM</button>
+<button type="button" data-value="mov" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">MOV</button>
+<button type="button" data-value="mkv" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">MKV</button>
+<button type="button" data-value="avi" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">AVI</button>
+<button type="button" data-value="gif" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">GIF</button>
+<button type="button" data-value="mp3" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant col-span-2">MP3 (audio)</button>
+</div>
+<p class="text-[11px] text-outline mt-2" id="format-hint"></p>
+</div>
+<div id="resolution-control">
+<label for="resolution-select" class="font-label-sm text-label-sm text-on-surface-variant mb-2 block">Resolution</label>
+<select id="resolution-select" class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 px-3 text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+<option value="0">Original</option>
+<option value="2160">4K (2160p)</option>
+<option value="1440">1440p</option>
+<option value="1080">1080p</option>
+<option value="720">720p</option>
+<option value="480">480p</option>
+<option value="360">360p</option>
+<option value="240">240p</option>
+</select>
+<p class="text-[11px] text-outline mt-2">Videos are only scaled down, never up.</p>
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant mb-2 block">Quality</label>
+<div class="grid grid-cols-3 gap-2" id="quality-group">
+<button type="button" data-value="high" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">High</button>
+<button type="button" data-value="medium" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">Balanced</button>
+<button type="button" data-value="low" class="opt-btn bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">Small file</button>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<label class="flex items-start gap-3 cursor-pointer" id="audio-control">
+<input type="checkbox" id="remove-audio" class="mt-0.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-primary"/>
+<span><span class="font-label-sm text-label-sm text-on-surface block">Remove audio</span><span class="text-[11px] text-outline">Output a silent video.</span></span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer" id="fast-control">
+<input type="checkbox" id="fast-mode" checked class="mt-0.5 rounded border-outline-variant bg-surface-container text-primary-container focus:ring-primary"/>
+<span><span class="font-label-sm text-label-sm text-on-surface block">Fast mode</span><span class="text-[11px] text-outline">When the codecs already fit the new format and size is unchanged, just rewrap the file (seconds instead of minutes, no quality loss).</span></span>
+</label>
+</div>
+<div class="flex flex-col gap-3 mt-2">
+<button id="convert-all-btn" type="button" class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-headline-lg-mobile text-[16px] font-semibold hover:bg-primary-fixed hover:shadow-[0_0_15px_rgba(128,131,255,0.4)] transition-all duration-300 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">sync</span><span>Convert All</span>
+</button>
+<button id="cancel-btn" type="button" class="hidden w-full bg-surface-container-high text-error py-2.5 rounded-lg font-label-sm text-label-sm border border-error/40 hover:bg-error-container/30 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">stop_circle</span><span>Stop</span>
+</button>
+</div>
+<!-- Engine status -->
+<div class="rounded-lg bg-surface-container-lowest border border-outline-variant p-3">
+<div class="flex items-center justify-between gap-2 mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px]">memory</span>FFmpeg engine</span>
+<span class="font-label-sm text-[11px] text-outline" id="engine-status">Not loaded</span>
+</div>
+<div class="progress-track"><div class="progress-fill" id="engine-bar"></div></div>
+<p class="text-[11px] text-outline mt-2">Downloads once (~31 MB) the first time you convert, then your browser caches it.</p>
+</div>
+</div>
+</div>
+<!-- Right Column: Preview & Queue -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Preview -->
+<div class="glass-panel rounded-xl overflow-hidden border border-outline-variant">
+<div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-outline-variant">
+<p class="font-label-sm text-label-sm text-on-surface truncate min-w-0" id="preview-title">Preview</p>
+<div class="flex gap-1 shrink-0" id="preview-tabs">
+<button type="button" data-view="original" class="opt-btn px-3 py-1.5 rounded-md font-label-sm text-[11px] bg-surface-container-high text-on-surface-variant border border-outline-variant">Original</button>
+<button type="button" data-view="converted" class="opt-btn px-3 py-1.5 rounded-md font-label-sm text-[11px] bg-surface-container-high text-on-surface-variant border border-outline-variant">Converted</button>
+</div>
+</div>
+<div class="relative bg-surface-container-lowest aspect-video flex items-center justify-center" style="background-image: radial-gradient(#464554 1px, transparent 1px); background-size: 20px 20px;">
+<div id="preview-empty" class="flex flex-col items-center justify-center text-center gap-3 px-6">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-3xl">movie</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant" id="preview-empty-title">No video selected</p>
+<p class="text-xs text-outline max-w-xs" id="preview-empty-text">Add videos on the left, then click one in the queue to preview it here.</p>
+</div>
+<video id="preview-video" class="hidden absolute inset-0 w-full h-full object-contain bg-black" controls playsinline></video>
+<audio id="preview-audio" class="hidden w-4/5" controls></audio>
+<img id="preview-img" class="hidden absolute inset-0 w-full h-full object-contain bg-black" alt="Converted GIF preview"/>
+</div>
+</div>
+<!-- Queue -->
+<div class="glass-panel rounded-xl p-4 border border-outline-variant">
+<div class="flex flex-wrap items-center justify-between gap-3 mb-4 px-2">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" id="queue-count">Queue (0)</h3>
+<div class="flex flex-wrap gap-2">
+<button id="download-all-btn" type="button" class="flex items-center gap-1.5 px-3 py-2 bg-secondary-container/20 text-secondary rounded-lg font-label-sm text-label-sm border border-secondary/30 hover:bg-secondary-container/30 transition-all" disabled>
+<span class="material-symbols-outlined text-[18px]">folder_zip</span><span>Download All (ZIP)</span>
+</button>
+<button id="clear-btn" type="button" class="flex items-center gap-1.5 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-sm text-label-sm border border-outline-variant hover:text-error transition-all" disabled>
+<span class="material-symbols-outlined text-[18px]">delete_sweep</span><span>Clear</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col gap-2" id="queue-list"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-24 bg-surface-container-lowest border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-4 opacity-80 hover:opacity-100 transition-opacity">
+<span class="font-label-sm text-label-sm text-on-surface-variant text-center">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="../tools-hub/">All Tools</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="https://github.com/shailesh-04/tl" target="_blank" rel="noopener noreferrer">GitHub</a>
+</nav>
+</div>
+</footer>
+</main>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { FFmpeg } from './vendor/ffmpeg/index.js';
+
+// Single-threaded core: works on GitHub Pages without COOP/COEP headers.
+var CORE_BASES = [
+    'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm/',
+    'https://unpkg.com/@ffmpeg/core@0.12.10/dist/esm/'
+];
+
+var FORMATS = {
+    mp4:  { ext: 'mp4',  mime: 'video/mp4',        hint: 'H.264 + AAC. Plays everywhere.' },
+    webm: { ext: 'webm', mime: 'video/webm',       hint: 'VP8 + Vorbis. Good for the web.' },
+    mov:  { ext: 'mov',  mime: 'video/quicktime',  hint: 'H.264 + AAC in a QuickTime container.' },
+    mkv:  { ext: 'mkv',  mime: 'video/x-matroska', hint: 'H.264 + AAC in Matroska. Fast mode keeps any codec.' },
+    avi:  { ext: 'avi',  mime: 'video/x-msvideo',  hint: 'MPEG-4 Part 2 + MP3 for older players.' },
+    gif:  { ext: 'gif',  mime: 'image/gif',        hint: 'Animated GIF, no sound. "Original" is capped at 640px wide.' },
+    mp3:  { ext: 'mp3',  mime: 'audio/mpeg',       hint: 'Extract the audio track as MP3.' }
+};
+
+// Codecs that can be copied into each container without re-encoding.
+var COPY_OK = {
+    mp4:  { v: ['h264', 'hevc', 'mpeg4', 'av1'], a: ['aac', 'mp3'] },
+    mov:  { v: ['h264', 'hevc', 'mpeg4', 'prores'], a: ['aac', 'mp3', 'alac', 'pcm_s16le'] },
+    mkv:  { v: null, a: null },
+    webm: { v: ['vp8', 'vp9', 'av1'], a: ['opus', 'vorbis'] },
+    mp3:  { v: [], a: ['mp3'] }
+};
+
+var QUALITY = {
+    high:   { crf: 20, vpxCrf: 10, vpxRate: '4M',   q: 3, abr: '192k', mp3: '320k', gifFps: 15 },
+    medium: { crf: 26, vpxCrf: 20, vpxRate: '2M',   q: 5, abr: '128k', mp3: '192k', gifFps: 12 },
+    low:    { crf: 32, vpxCrf: 32, vpxRate: '800k', q: 9, abr: '96k',  mp3: '128k', gifFps: 10 }
+};
+
+var $ = function (id) { return document.getElementById(id); };
+var toast = $('toast');
+var fileInput = $('file-input');
+var dropZone = $('drop-zone');
+var formatGroup = $('format-group');
+var qualityGroup = $('quality-group');
+var formatHint = $('format-hint');
+var resolutionSelect = $('resolution-select');
+var resolutionControl = $('resolution-control');
+var removeAudio = $('remove-audio');
+var audioControl = $('audio-control');
+var fastMode = $('fast-mode');
+var fastControl = $('fast-control');
+var convertAllBtn = $('convert-all-btn');
+var cancelBtn = $('cancel-btn');
+var engineStatus = $('engine-status');
+var engineBar = $('engine-bar');
+var queueList = $('queue-list');
+var queueCount = $('queue-count');
+var downloadAllBtn = $('download-all-btn');
+var clearBtn = $('clear-btn');
+var previewTitle = $('preview-title');
+var previewTabs = $('preview-tabs');
+var previewEmpty = $('preview-empty');
+var previewEmptyTitle = $('preview-empty-title');
+var previewEmptyText = $('preview-empty-text');
+var previewVideo = $('preview-video');
+var previewAudio = $('preview-audio');
+var previewImg = $('preview-img');
+
+var settings = { format: 'mp4', quality: 'medium' };
+var items = [];
+var nextId = 1;
+var activeId = null;
+var previewView = 'original';
+
+var ffmpeg = null;
+var coreBlobURLs = null;
+var engineLoading = null;
+var logSink = null;
+var running = false;
+var cancelRequested = false;
+var currentItem = null;
+
+// ---------- helpers ----------
+function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 2400);
+}
+function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
+}
+function formatTime(sec) {
+    if (!isFinite(sec) || sec <= 0) return '';
+    sec = Math.round(sec);
+    var h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0');
+}
+function parseClock(str) {
+    var p = str.split(':');
+    return (+p[0]) * 3600 + (+p[1]) * 60 + parseFloat(p[2]);
+}
+function baseName(name) { return name.replace(/\.[^./\\]+$/, '') || 'video'; }
+function findItem(id) {
+    for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i];
+    return null;
+}
+function settingsKey() {
+    return [settings.format, settings.quality, resolutionSelect.value, removeAudio.checked, fastMode.checked].join('|');
+}
+function outputName(item) {
+    return baseName(item.name) + '.' + FORMATS[item.outFormat].ext;
+}
+
+// ---------- option groups ----------
+function bindGroup(group, key, onChange) {
+    group.addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-value]');
+        if (!btn || running) return;
+        settings[key] = btn.dataset.value;
+        syncGroup(group, settings[key]);
+        if (onChange) onChange();
+        renderQueue();
+    });
+}
+function syncGroup(group, value) {
+    group.querySelectorAll('button[data-value]').forEach(function (b) {
+        b.setAttribute('aria-pressed', b.dataset.value === value ? 'true' : 'false');
+    });
+}
+function onFormatChange() {
+    var f = settings.format;
+    formatHint.textContent = FORMATS[f].hint;
+    var isAudio = f === 'mp3';
+    resolutionControl.classList.toggle('opacity-40', isAudio);
+    resolutionSelect.disabled = isAudio;
+    audioControl.classList.toggle('opacity-40', isAudio || f === 'gif');
+    removeAudio.disabled = isAudio || f === 'gif';
+    fastControl.classList.toggle('opacity-40', !COPY_OK[f]);
+    fastMode.disabled = !COPY_OK[f];
+}
+bindGroup(formatGroup, 'format', onFormatChange);
+bindGroup(qualityGroup, 'quality');
+[resolutionSelect, removeAudio, fastMode].forEach(function (el) {
+    el.addEventListener('change', renderQueue);
+});
+
+// ---------- engine ----------
+function setEngine(text, pct) {
+    engineStatus.textContent = text;
+    engineBar.classList.toggle('indeterminate', pct === -1);
+    engineBar.style.width = (pct === -1 ? 30 : Math.max(0, Math.min(100, pct))) + '%';
+}
+
+async function fetchToBlobURL(url, mime, onProgress) {
+    var res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' for ' + url);
+    var total = +res.headers.get('Content-Length') || 0;
+    if (!res.body || !total) {
+        var buf = await res.arrayBuffer();
+        return URL.createObjectURL(new Blob([buf], { type: mime }));
+    }
+    var reader = res.body.getReader();
+    var chunks = [], received = 0;
+    for (;;) {
+        var r = await reader.read();
+        if (r.done) break;
+        chunks.push(r.value);
+        received += r.value.length;
+        onProgress(received, total);
+    }
+    return URL.createObjectURL(new Blob(chunks, { type: mime }));
+}
+
+async function downloadCore() {
+    var lastErr;
+    for (var i = 0; i < CORE_BASES.length; i++) {
+        var base = CORE_BASES[i];
+        try {
+            var js = await fetchToBlobURL(base + 'ffmpeg-core.js', 'text/javascript', function () {});
+            var wasm = await fetchToBlobURL(base + 'ffmpeg-core.wasm', 'application/wasm', function (got, total) {
+                setEngine('Downloading ' + Math.round(got / total * 100) + '%', got / total * 100);
+            });
+            return { coreURL: js, wasmURL: wasm };
+        } catch (err) {
+            lastErr = err;
+        }
+    }
+    throw lastErr || new Error('Could not download FFmpeg');
+}
+
+function ensureEngine() {
+    if (ffmpeg && ffmpeg.loaded) return Promise.resolve(ffmpeg);
+    if (engineLoading) return engineLoading;
+    engineLoading = (async function () {
+        try {
+            if (!coreBlobURLs) {
+                setEngine('Downloading…', 0);
+                coreBlobURLs = await downloadCore();
+            }
+            setEngine('Starting…', -1);
+            var inst = new FFmpeg();
+            inst.on('log', function (e) { if (logSink) logSink(e.message); });
+            await inst.load(coreBlobURLs);
+            ffmpeg = inst;
+            setEngine('Ready', 100);
+            return inst;
+        } catch (err) {
+            setEngine('Failed to load', 0);
+            throw err;
+        } finally {
+            engineLoading = null;
+        }
+    })();
+    return engineLoading;
+}
+
+// A WASM crash (e.g. "memory access out of bounds") leaves the instance unusable,
+// so throw it away; ensureEngine() starts a fresh one from the cached core.
+function resetEngine() {
+    if (ffmpeg) { try { ffmpeg.terminate(); } catch (e) {} }
+    ffmpeg = null;
+    inputMounted = false;
+}
+
+function userError(msg) {
+    var err = new Error(msg);
+    err.expected = true;
+    return err;
+}
+
+// Run an ffmpeg command, capturing its log lines.
+async function run(args, onLine) {
+    var lines = [];
+    logSink = function (msg) {
+        lines.push(msg);
+        if (lines.length > 400) lines.shift();
+        if (onLine) onLine(msg);
+    };
+    try {
+        var code = await ffmpeg.exec(args);
+        return { code: code, lines: lines };
+    } finally {
+        logSink = null;
+    }
+}
+
+// ---------- probing & argument building ----------
+function parseProbe(lines) {
+    var info = { duration: 0, vcodec: null, acodec: null, width: 0, height: 0 };
+    lines.forEach(function (l) {
+        var d = l.match(/Duration:\s*(\d+:\d+:\d+(?:\.\d+)?)/);
+        if (d) info.duration = parseClock(d[1]);
+        if (!info.vcodec) {
+            var v = l.match(/Stream #\d+:\d+.*?Video:\s*([a-z0-9_]+)/i);
+            if (v && !/attached pic/.test(l)) {
+                info.vcodec = v[1].toLowerCase();
+                var wh = l.match(/,\s*(\d{2,5})x(\d{2,5})/);
+                if (wh) { info.width = +wh[1]; info.height = +wh[2]; }
+            }
+        }
+        if (!info.acodec) {
+            var a = l.match(/Stream #\d+:\d+.*?Audio:\s*([a-z0-9_]+)/i);
+            if (a) info.acodec = a[1].toLowerCase();
+        }
+    });
+    return info;
+}
+
+function canCopy(fmt, info, job) {
+    var rule = COPY_OK[fmt];
+    if (!rule || !job.fast) return false;
+    if (fmt === 'mp3') return info.acodec === 'mp3';
+    if (!info.vcodec) return false;
+    if (job.height && info.height > job.height) return false;
+    if (rule.v && rule.v.indexOf(info.vcodec) === -1) return false;
+    if (info.acodec && !job.noAudio && rule.a && rule.a.indexOf(info.acodec) === -1) return false;
+    return true;
+}
+
+function scaleFilter(height) {
+    // Keep dimensions even (required by H.264 4:2:0) and never upscale.
+    if (!height) return 'scale=trunc(iw/2)*2:trunc(ih/2)*2,setsar=1';
+    return "scale=-2:'trunc(min(" + height + ",ih)/2)*2',setsar=1";
+}
+
+function buildArgs(fmt, inPath, outPath, info, job, copy) {
+    var q = QUALITY[job.quality];
+    var args = ['-hide_banner', '-y', '-i', inPath];
+
+    if (fmt === 'mp3') {
+        if (!info.acodec) throw userError('This file has no audio track');
+        args.push('-map', '0:a:0', '-vn');
+        args.push.apply(args, copy ? ['-c:a', 'copy'] : ['-c:a', 'libmp3lame', '-b:a', q.mp3]);
+        args.push(outPath);
+        return args;
+    }
+
+    if (!info.vcodec) throw userError('No video stream found');
+
+    if (fmt === 'gif') {
+        var size = job.height ? "scale=-2:'min(" + job.height + ",ih)'" : "scale='min(640,iw)':-2";
+        args.push('-map', '0:v:0', '-an',
+            '-vf', 'fps=' + q.gifFps + ',' + size + ':flags=lanczos,setsar=1,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5',
+            '-loop', '0', outPath);
+        return args;
+    }
+
+    args.push('-map', '0:v:0');
+    var withAudio = info.acodec && !job.noAudio;
+    if (withAudio) args.push('-map', '0:a:0');
+
+    if (copy) {
+        args.push('-c:v', 'copy');
+        args.push.apply(args, withAudio ? ['-c:a', 'copy'] : ['-an']);
+        if ((fmt === 'mp4' || fmt === 'mov') && info.vcodec === 'hevc') args.push('-tag:v', 'hvc1');
+    } else {
+        args.push('-vf', scaleFilter(job.height));
+        if (fmt === 'webm') {
+            args.push('-c:v', 'libvpx', '-deadline', 'realtime', '-cpu-used', '8',
+                '-crf', String(q.vpxCrf), '-b:v', q.vpxRate);
+            // libvorbis, not libopus: the libopus encoder crashes in @ffmpeg/core 0.12.10.
+            args.push.apply(args, withAudio ? ['-c:a', 'libvorbis', '-b:a', q.abr] : ['-an']);
+        } else if (fmt === 'avi') {
+            args.push('-c:v', 'mpeg4', '-q:v', String(q.q), '-tag:v', 'XVID');
+            args.push.apply(args, withAudio ? ['-c:a', 'libmp3lame', '-b:a', q.abr] : ['-an']);
+        } else {
+            args.push('-c:v', 'libx264', '-preset', 'veryfast', '-crf', String(q.crf), '-pix_fmt', 'yuv420p');
+            args.push.apply(args, withAudio ? ['-c:a', 'aac', '-b:a', q.abr] : ['-an']);
+        }
+    }
+    if (fmt === 'mp4' || fmt === 'mov') args.push('-movflags', '+faststart');
+    args.push(outPath);
+    return args;
+}
+
+function lastError(lines) {
+    for (var i = lines.length - 1; i >= 0; i--) {
+        var l = lines[i].trim();
+        if (/error|invalid|not supported|could not|unknown|no such|failed/i.test(l) && !/^\s*(ffmpeg version|built with|configuration)/.test(l)) {
+            return l.length > 140 ? l.slice(0, 140) + '…' : l;
+        }
+    }
+    return 'FFmpeg could not convert this file';
+}
+
+// ---------- conversion ----------
+var inputMounted = false;
+
+async function mountInput(file) {
+    var dir = '/input';
+    try { await ffmpeg.createDir(dir); } catch (e) { /* already exists */ }
+    try {
+        await ffmpeg.mount('WORKERFS', { files: [file] }, dir);
+        inputMounted = true;
+        return dir + '/' + file.name;
+    } catch (e) {
+        // Fallback: copy bytes into the in-memory filesystem.
+        var path = '/in_' + Date.now() + '.' + (file.name.split('.').pop() || 'bin');
+        await ffmpeg.writeFile(path, new Uint8Array(await file.arrayBuffer()));
+        return path;
+    }
+}
+
+async function releaseInput(path) {
+    if (inputMounted) {
+        try { await ffmpeg.unmount('/input'); } catch (e) {}
+        inputMounted = false;
+    } else if (path) {
+        try { await ffmpeg.deleteFile(path); } catch (e) {}
+    }
+}
+
+async function convertItem(item) {
+    var job = {
+        format: settings.format,
+        quality: settings.quality,
+        height: parseInt(resolutionSelect.value, 10) || 0,
+        noAudio: removeAudio.checked,
+        fast: fastMode.checked,
+        key: settingsKey()
+    };
+    var fmt = job.format;
+    var outPath = '/output.' + FORMATS[fmt].ext;
+    var inPath = null;
+
+    currentItem = item;
+    item.status = 'working';
+    item.stage = 'Preparing…';
+    item.progress = -1;
+    item.error = '';
+    renderQueue();
+
+    try {
+        await ensureEngine();
+        inPath = await mountInput(item.file);
+
+        item.stage = 'Reading file…';
+        updateRow(item);
+        var probe = await run(['-hide_banner', '-i', inPath]);
+        var info = parseProbe(probe.lines);
+        item.info = info;
+        if (!info.vcodec && !info.acodec) throw userError('Not a readable video file');
+
+        var copy = canCopy(fmt, info, job);
+        var result = null;
+        if (copy) {
+            try {
+                result = await encode(item, buildArgs(fmt, inPath, outPath, info, job, true), info, true);
+            } catch (err) {
+                if (cancelRequested) throw err;
+                resetEngine();
+                await ensureEngine();
+                inPath = await mountInput(item.file);
+            }
+            if (!result || result.code !== 0) {
+                // Stream copy can fail on unusual files; retry with a full re-encode.
+                if (result) { try { await ffmpeg.deleteFile(outPath); } catch (e) {} }
+                copy = false;
+                result = null;
+            }
+        }
+        if (!result) result = await encode(item, buildArgs(fmt, inPath, outPath, info, job, false), info, false);
+        if (cancelRequested) throw new Error('Cancelled');
+        if (result.code !== 0) throw userError(lastError(result.lines));
+
+        var data = null;
+        try { data = await ffmpeg.readFile(outPath); } catch (e) {}
+        try { await ffmpeg.deleteFile(outPath); } catch (e) {}
+        if (!data || !data.length) throw userError('Conversion produced an empty file (the video may have no frames)');
+
+        if (item.outURL) URL.revokeObjectURL(item.outURL);
+        item.outBlob = new Blob([data], { type: FORMATS[fmt].mime });
+        item.outURL = URL.createObjectURL(item.outBlob);
+        item.outFormat = fmt;
+        item.outKey = job.key;
+        item.copied = copy;
+        item.status = 'done';
+        item.progress = 100;
+        if (activeId === item.id) { previewView = 'converted'; updatePreview(); }
+    } catch (err) {
+        if (cancelRequested) {
+            item.status = 'queued';
+            item.error = '';
+        } else {
+            item.status = 'error';
+            if (err && err.expected) {
+                item.error = err.message;
+            } else {
+                // Unexpected failure means the engine crashed; restart it for the next file.
+                item.error = 'FFmpeg crashed on this file' + (err && err.message ? ' (' + err.message + ')' : '');
+                resetEngine();
+            }
+            console.error(err);
+        }
+    } finally {
+        if (ffmpeg && ffmpeg.loaded && !cancelRequested) await releaseInput(inPath);
+        currentItem = null;
+        renderQueue();
+    }
+}
+
+function encode(item, args, info, copy) {
+    item.stage = copy ? 'Rewrapping (fast)…' : 'Converting…';
+    item.progress = info.duration ? 0 : -1;
+    updateRow(item);
+    return run(args, function (line) {
+        var t = line.match(/time=\s*(-?\d+:\d+:\d+(?:\.\d+)?)/);
+        if (t && info.duration) {
+            var pct = Math.max(0, Math.min(99, parseClock(t[1]) / info.duration * 100));
+            if (Math.floor(pct) !== Math.floor(item.progress)) {
+                item.progress = pct;
+                updateRow(item);
+            }
+        }
+    });
+}
+
+async function convertQueue(list) {
+    if (running) return;
+    if (!list.length) { showToast('Everything is already converted with these settings'); return; }
+    running = true;
+    cancelRequested = false;
+    setRunningUI(true);
+    var ok = 0, failed = 0;
+    for (var i = 0; i < list.length; i++) {
+        if (cancelRequested) break;
+        if (items.indexOf(list[i]) === -1) continue; // removed while waiting
+        await convertItem(list[i]);
+        if (list[i].status === 'done') ok++;
+        else if (list[i].status === 'error') failed++;
+    }
+    running = false;
+    setRunningUI(false);
+    if (cancelRequested) showToast('Stopped');
+    else if (failed) showToast(ok + ' converted, ' + failed + ' failed');
+    else showToast(ok + ' video' + (ok === 1 ? '' : 's') + ' converted');
+    cancelRequested = false;
+}
+
+function pendingItems() {
+    var key = settingsKey();
+    return items.filter(function (i) { return !(i.status === 'done' && i.outKey === key); });
+}
+
+function setRunningUI(on) {
+    convertAllBtn.disabled = on;
+    convertAllBtn.querySelector('span:last-child').textContent = on ? 'Converting…' : 'Convert All';
+    convertAllBtn.querySelector('.material-symbols-outlined').classList.toggle('animate-spin', on);
+    cancelBtn.classList.toggle('hidden', !on);
+    formatGroup.classList.toggle('pointer-events-none', on);
+    qualityGroup.classList.toggle('pointer-events-none', on);
+    [resolutionSelect, removeAudio, fastMode].forEach(function (el) { el.disabled = on; });
+    if (!on) onFormatChange();
+    renderQueue();
+}
+
+convertAllBtn.addEventListener('click', function () {
+    if (!items.length) { showToast('Add a video first'); return; }
+    convertQueue(pendingItems());
+});
+
+cancelBtn.addEventListener('click', function () {
+    if (!running) return;
+    cancelRequested = true;
+    // Terminating the worker is the only way to interrupt a running ffmpeg job.
+    resetEngine();
+    setEngine('Stopped', 0);
+});
+
+// ---------- files ----------
+function looksLikeVideo(file) {
+    if (file.type && (file.type.indexOf('video/') === 0)) return true;
+    return /\.(mp4|m4v|mov|mkv|webm|avi|flv|wmv|3gp|3g2|ts|mts|m2ts|mpeg|mpg|ogv|vob|f4v)$/i.test(file.name);
+}
+
+function handleFiles(fileList) {
+    var added = 0, skipped = 0;
+    Array.prototype.forEach.call(fileList, function (file) {
+        if (!looksLikeVideo(file)) { skipped++; return; }
+        var item = {
+            id: nextId++,
+            file: file,
+            name: file.name,
+            size: file.size,
+            srcURL: URL.createObjectURL(file),
+            status: 'queued',
+            stage: '',
+            progress: 0,
+            error: '',
+            info: null,
+            outBlob: null,
+            outURL: null,
+            outFormat: null,
+            outKey: null
+        };
+        items.push(item);
+        added++;
+        if (activeId === null) { activeId = item.id; previewView = 'original'; }
+    });
+    if (skipped) showToast(skipped + ' file' + (skipped === 1 ? ' is' : 's are') + ' not a video and ' + (skipped === 1 ? 'was' : 'were') + ' skipped');
+    else if (added) showToast('Added ' + added + ' video' + (added === 1 ? '' : 's'));
+    renderQueue();
+    updatePreview();
+}
+
+function deleteItem(id) {
+    var item = findItem(id);
+    if (!item) return;
+    if (item === currentItem) { showToast('Stop the conversion before removing this video'); return; }
+    URL.revokeObjectURL(item.srcURL);
+    if (item.outURL) URL.revokeObjectURL(item.outURL);
+    items.splice(items.indexOf(item), 1);
+    if (activeId === id) {
+        activeId = items.length ? items[0].id : null;
+        previewView = 'original';
+        updatePreview();
+    }
+    renderQueue();
+}
+
+clearBtn.addEventListener('click', function () {
+    if (running) { showToast('Stop the conversion first'); return; }
+    items.forEach(function (i) {
+        URL.revokeObjectURL(i.srcURL);
+        if (i.outURL) URL.revokeObjectURL(i.outURL);
+    });
+    items = [];
+    activeId = null;
+    renderQueue();
+    updatePreview();
+});
+
+// ---------- downloads ----------
+function triggerDownload(url, filename) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+function uniqueNames(list) {
+    var used = {};
+    return list.map(function (item) {
+        var name = outputName(item), n = 1;
+        while (used[name.toLowerCase()]) {
+            name = baseName(item.name) + ' (' + (n++) + ').' + FORMATS[item.outFormat].ext;
+        }
+        used[name.toLowerCase()] = true;
+        return name;
+    });
+}
+
+function downloadItem(id) {
+    var item = findItem(id);
+    if (!item || !item.outURL) { showToast('Convert this video first'); return; }
+    triggerDownload(item.outURL, outputName(item));
+    showToast('Downloading ' + outputName(item));
+}
+
+downloadAllBtn.addEventListener('click', async function () {
+    var done = items.filter(function (i) { return i.outBlob; });
+    if (!done.length) { showToast('Nothing converted yet'); return; }
+    if (done.length === 1) { downloadItem(done[0].id); return; }
+    if (typeof JSZip === 'undefined') {
+        // ZIP library blocked or offline: fall back to one download per file.
+        var names0 = uniqueNames(done);
+        done.forEach(function (item, i) { setTimeout(function () { triggerDownload(item.outURL, names0[i]); }, i * 400); });
+        return;
+    }
+    var label = downloadAllBtn.querySelector('span:last-child');
+    downloadAllBtn.disabled = true;
+    try {
+        var zip = new JSZip();
+        var names = uniqueNames(done);
+        done.forEach(function (item, i) { zip.file(names[i], item.outBlob); });
+        // Video is already compressed; STORE is much faster and just as small.
+        var blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' }, function (m) {
+            label.textContent = 'Zipping ' + Math.round(m.percent) + '%';
+        });
+        var url = URL.createObjectURL(blob);
+        triggerDownload(url, 'converted-videos.zip');
+        setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        showToast('Downloading ' + done.length + ' files as ZIP');
+    } catch (err) {
+        showToast('Could not create ZIP: ' + err.message);
+    } finally {
+        label.textContent = 'Download All (ZIP)';
+        downloadAllBtn.disabled = false;
+        renderQueue();
+    }
+});
+
+// ---------- rendering ----------
+function statusLine(item) {
+    var key = settingsKey();
+    if (item.status === 'error') return '<span class="text-error">' + escapeHtml(item.error) + '</span>';
+    if (item.status === 'working') {
+        var pct = item.progress >= 0 ? ' ' + Math.floor(item.progress) + '%' : '';
+        return '<span class="text-primary">' + escapeHtml(item.stage) + pct + '</span>';
+    }
+    if (item.status === 'done') {
+        var out = formatBytes(item.size) + ' → <span class="text-secondary">' + formatBytes(item.outBlob.size) + ' ' + FORMATS[item.outFormat].ext.toUpperCase() + '</span>';
+        if (item.copied) out += ' · fast';
+        if (item.outKey !== key) out += ' · <span class="text-tertiary">settings changed</span>';
+        return out;
+    }
+    return formatBytes(item.size) + (running ? ' · waiting' : ' · ready');
+}
+
+function rowHTML(item) {
+    var icon = item.status === 'error' ? 'error' : (item.status === 'done' ? 'check_circle' : (item.status === 'working' ? 'progress_activity' : 'movie'));
+    var iconColor = item.status === 'error' ? 'text-error' : (item.status === 'done' ? 'text-secondary' : (item.status === 'working' ? 'text-primary animate-spin' : 'text-on-surface-variant'));
+    var showBar = item.status === 'working';
+    var dur = item.info && item.info.duration ? ' · ' + formatTime(item.info.duration) : '';
+    var dims = item.info && item.info.height ? ' · ' + item.info.width + '×' + item.info.height : '';
+    return '' +
+        '<div class="flex items-center gap-3 min-w-0 flex-1">' +
+            '<div class="w-10 h-10 rounded bg-surface-dim flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px] ' + iconColor + '">' + icon + '</span></div>' +
+            '<div class="min-w-0 flex-1">' +
+                '<p class="font-label-sm text-label-sm text-on-surface truncate" title="' + escapeHtml(item.name) + '">' + escapeHtml(item.name) + '<span class="text-outline">' + dur + dims + '</span></p>' +
+                '<p class="text-[11px] text-outline mt-1 font-label-sm truncate" data-role="status">' + statusLine(item) + '</p>' +
+                '<div class="progress-track mt-2' + (showBar ? '' : ' hidden') + '" data-role="track"><div class="progress-fill' + (item.progress < 0 ? ' indeterminate' : '') + '" data-role="bar" style="width:' + Math.max(0, item.progress) + '%"></div></div>' +
+            '</div>' +
+        '</div>' +
+        '<div class="flex items-center gap-1 shrink-0">' +
+            '<button type="button" data-act="convert" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-variant" title="Convert this video"' + (running ? ' disabled' : '') + '><span class="material-symbols-outlined text-[20px]">' + (item.status === 'done' ? 'replay' : 'play_arrow') + '</span></button>' +
+            '<button type="button" data-act="download" class="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-surface-variant" title="Download converted file"' + (item.outURL ? '' : ' disabled') + '><span class="material-symbols-outlined text-[20px]">download</span></button>' +
+            '<button type="button" data-act="delete" class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-surface-variant" title="Remove"' + (item === currentItem ? ' disabled' : '') + '><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
+        '</div>';
+}
+
+function rowClass(item) {
+    return 'queue-row flex items-center justify-between gap-2 p-3 bg-surface-container rounded-lg border ' +
+        (item.id === activeId ? 'border-primary' : 'border-surface-container-high') +
+        ' hover:border-outline-variant transition-colors cursor-pointer';
+}
+
+function renderQueue() {
+    var doneCount = items.filter(function (i) { return i.outBlob; }).length;
+    queueCount.textContent = 'Queue (' + items.length + ')' + (doneCount ? ' · ' + doneCount + ' converted' : '');
+    downloadAllBtn.disabled = !doneCount;
+    clearBtn.disabled = !items.length || running;
+    queueList.innerHTML = '';
+    if (!items.length) {
+        queueList.innerHTML = '<p class="text-on-surface-variant text-xs px-2 py-6 text-center">No videos yet. Add some to get started.</p>';
+        return;
+    }
+    items.forEach(function (item) {
+        var row = document.createElement('div');
+        row.className = rowClass(item);
+        row.dataset.id = item.id;
+        row.innerHTML = rowHTML(item);
+        queueList.appendChild(row);
+    });
+}
+
+// Lightweight update during conversion to avoid re-rendering every row.
+function updateRow(item) {
+    var row = queueList.querySelector('.queue-row[data-id="' + item.id + '"]');
+    if (!row) return;
+    row.querySelector('[data-role="status"]').innerHTML = statusLine(item);
+    var track = row.querySelector('[data-role="track"]');
+    var bar = row.querySelector('[data-role="bar"]');
+    track.classList.toggle('hidden', item.status !== 'working');
+    bar.classList.toggle('indeterminate', item.progress < 0);
+    bar.style.width = Math.max(0, item.progress) + '%';
+}
+
+queueList.addEventListener('click', function (e) {
+    var row = e.target.closest('.queue-row');
+    if (!row) return;
+    var id = +row.dataset.id;
+    var btn = e.target.closest('button[data-act]');
+    if (btn) {
+        if (btn.disabled) return;
+        if (btn.dataset.act === 'download') downloadItem(id);
+        else if (btn.dataset.act === 'delete') deleteItem(id);
+        else if (btn.dataset.act === 'convert') convertQueue([findItem(id)]);
+        return;
+    }
+    if (activeId !== id) {
+        activeId = id;
+        var it = findItem(id);
+        previewView = it && it.outURL ? 'converted' : 'original';
+        renderQueue();
+        updatePreview();
+    }
+});
+
+// ---------- preview ----------
+function hideMedia() {
+    previewVideo.pause();
+    previewAudio.pause();
+    [previewVideo, previewAudio, previewImg].forEach(function (el) { el.classList.add('hidden'); });
+}
+
+function showEmpty(title, text) {
+    hideMedia();
+    previewEmptyTitle.textContent = title;
+    previewEmptyText.textContent = text;
+    previewEmpty.classList.remove('hidden');
+}
+
+function updatePreview() {
+    var item = findItem(activeId);
+    previewTabs.querySelector('[data-view="converted"]').disabled = !(item && item.outURL);
+    previewTabs.querySelectorAll('button').forEach(function (b) {
+        b.setAttribute('aria-pressed', b.dataset.view === previewView ? 'true' : 'false');
+    });
+    if (!item) {
+        previewTitle.textContent = 'Preview';
+        showEmpty('No video selected', 'Add videos on the left, then click one in the queue to preview it here.');
+        return;
+    }
+    var converted = previewView === 'converted' && item.outURL;
+    previewTitle.textContent = converted ? outputName(item) : item.name;
+    var url = converted ? item.outURL : item.srcURL;
+    var fmt = converted ? item.outFormat : null;
+
+    hideMedia();
+    previewEmpty.classList.add('hidden');
+    if (fmt === 'gif') {
+        previewImg.src = url;
+        previewImg.classList.remove('hidden');
+    } else if (fmt === 'mp3') {
+        previewAudio.src = url;
+        previewAudio.classList.remove('hidden');
+    } else if (previewVideo.getAttribute('src') !== url) {
+        previewVideo.src = url;
+        previewVideo.classList.remove('hidden');
+    } else {
+        previewVideo.classList.remove('hidden');
+    }
+}
+
+previewVideo.addEventListener('error', function () {
+    if (!previewVideo.getAttribute('src')) return;
+    previewVideo.removeAttribute('src');
+    previewVideo.load();
+    showEmpty('Your browser can’t play this format', 'It can still be converted. Try converting to MP4 or WebM to preview it here.');
+});
+
+previewTabs.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-view]');
+    if (!btn || btn.disabled) return;
+    previewView = btn.dataset.view;
+    updatePreview();
+});
+
+// ---------- drag & drop ----------
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (name) {
+    dropZone.addEventListener(name, function (e) { e.preventDefault(); e.stopPropagation(); });
+});
+['dragenter', 'dragover'].forEach(function (name) {
+    dropZone.addEventListener(name, function () { dropZone.classList.add('drag-active'); });
+});
+['dragleave', 'drop'].forEach(function (name) {
+    dropZone.addEventListener(name, function () { dropZone.classList.remove('drag-active'); });
+});
+dropZone.addEventListener('drop', function (e) {
+    if (e.dataTransfer && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', function (e) {
+    if (e.target.files && e.target.files.length) handleFiles(e.target.files);
+    fileInput.value = '';
+});
+
+window.addEventListener('beforeunload', function (e) {
+    if (running) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ---------- init ----------
+if (typeof WebAssembly === 'undefined' || typeof Worker === 'undefined') {
+    setEngine('Unsupported browser', 0);
+    convertAllBtn.disabled = true;
+    showToast('This browser does not support WebAssembly workers');
+}
+syncGroup(formatGroup, settings.format);
+syncGroup(qualityGroup, settings.quality);
+onFormatChange();
+renderQueue();
+updatePreview();
+</script>
+</body></html>
