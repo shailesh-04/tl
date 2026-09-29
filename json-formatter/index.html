@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>JSON Formatter &amp; Validator - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    #outputPre.wrap-line { white-space: pre-wrap; word-break: break-all; }
+    #outputPre.wrap-pretty { white-space: pre; }
+</style>
+<script src="../assets/theme-config.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-3">
+<a href="../tools-hub/" class="flex items-center gap-2 px-4 py-2 bg-transparent border border-outline-variant text-on-surface hover:bg-surface-variant hover:text-primary font-label-sm text-label-sm rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+All Tools
+</a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-1 w-full flex flex-col min-h-[calc(100vh-4rem)] pt-16">
+<div class="px-gutter max-w-container-max mx-auto w-full py-margin-md flex-1 flex flex-col">
+<!-- Tool Header & Controls -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+<div>
+<div class="flex items-center gap-3 mb-2">
+<span class="px-2.5 py-1 bg-surface-container-highest text-tertiary-fixed font-label-sm text-label-sm rounded-full border border-outline-variant/50">DATA PROCESSING</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">JSON Formatter &amp; Validator</h1>
+<p class="text-on-surface-variant max-w-2xl text-sm">Paste your raw JSON payload below to format, minify, and validate structure. Features real-time syntax error detection.</p>
+</div>
+<!-- Toolbar Actions -->
+<div class="flex items-center gap-3 flex-wrap">
+<div class="flex items-center bg-surface-container-low rounded-lg border border-outline-variant p-1 shadow-sm mr-2">
+<div id="validityBadge" class="flex items-center gap-2 px-3 py-1.5 bg-secondary-container/20 border border-secondary/30 rounded-md">
+<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-sm text-label-sm text-secondary">Valid JSON</span>
+</div>
+</div>
+<button id="beautifyBtn" class="flex items-center gap-2 px-4 py-2 bg-inverse-primary text-white font-label-sm text-label-sm rounded-lg hover:bg-primary-container hover:text-on-primary-container transition-all shadow-lg shadow-inverse-primary/20">
+<span class="material-symbols-outlined text-[18px]" data-icon="format_align_left">format_align_left</span>
+Beautify
+</button>
+<button id="minifyBtn" class="flex items-center gap-2 px-4 py-2 bg-transparent border border-outline-variant text-on-surface hover:bg-surface-variant hover:text-primary font-label-sm text-label-sm rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="compress">compress</span>
+Minify
+</button>
+<div class="w-px h-6 bg-outline-variant mx-1"></div>
+<button id="clearBtn" class="flex items-center gap-2 px-4 py-2 bg-transparent border border-outline-variant text-on-surface hover:bg-error-container/20 hover:text-error hover:border-error/50 font-label-sm text-label-sm rounded-lg transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+Clear
+</button>
+</div>
+</div>
+<!-- Editor Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter flex-1 min-h-[500px]">
+<!-- Input Pane -->
+<div class="flex flex-col bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden shadow-sm shadow-black/40 relative group">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-highest border-b border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Raw Input</span>
+<button id="copyInputBtn" class="text-on-surface-variant hover:text-primary transition-colors opacity-0 group-hover:opacity-100" title="Copy to clipboard">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+<textarea id="jsonInput" spellcheck="false" class="flex-1 w-full bg-transparent text-on-surface font-label-sm text-label-sm p-4 outline-none resize-none placeholder-on-surface-variant/50 focus:ring-1 focus:ring-primary/50 focus:bg-surface-container/50 transition-colors" placeholder="Paste your messy JSON here...">{ "company": "TechCorp", "employees": [ { "id": 1, "name": "Jane Doe", "department": "Engineering", "active": true }, { "id": 2, "name": "John Smith", "department": "Design", "active": false } ], "metadata": { "lastUpdated": "2023-10-27T10:00:00Z", "version": 1.4, "tags": null } }</textarea>
+</div>
+<!-- Output Pane -->
+<div class="flex flex-col bg-surface border border-outline-variant rounded-xl overflow-hidden shadow-sm shadow-black/40 relative group">
+<div class="flex items-center justify-between px-4 py-2 bg-surface-container-highest border-b border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Formatted Output</span>
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button id="downloadBtn" class="text-on-surface-variant hover:text-primary transition-colors" title="Download JSON">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+</button>
+<button id="copyOutputBtn" class="text-on-surface-variant hover:text-primary transition-colors" title="Copy to clipboard">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+</button>
+</div>
+</div>
+<div class="flex-1 w-full bg-transparent p-4 overflow-auto">
+<pre id="outputPre" class="wrap-pretty font-label-sm text-label-sm leading-relaxed text-on-surface-variant"></pre>
+<div id="errorCard" class="hidden items-start gap-3 bg-error-container/10 border border-error/40 text-error rounded-lg p-4">
+<span class="material-symbols-outlined text-[20px] mt-0.5" data-icon="error">error</span>
+<div>
+<p id="errorTitle" class="font-label-sm text-label-sm mb-1">Invalid JSON</p>
+<p id="errorMessage" class="text-xs text-error/90 leading-relaxed"></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto opacity-80 hover:opacity-100 transition-opacity">
+<div class="mb-4 md:mb-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const input = document.getElementById('jsonInput');
+    const outputPre = document.getElementById('outputPre');
+    const errorCard = document.getElementById('errorCard');
+    const errorMessage = document.getElementById('errorMessage');
+    const validityBadge = document.getElementById('validityBadge');
+    const beautifyBtn = document.getElementById('beautifyBtn');
+    const minifyBtn = document.getElementById('minifyBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyInputBtn = document.getElementById('copyInputBtn');
+    const copyOutputBtn = document.getElementById('copyOutputBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const toast = document.getElementById('toast');
+
+    let mode = 'pretty'; // 'pretty' | 'minified'
+    let currentOutputText = '';
+    let currentValue = undefined;
+    let isValid = false;
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlightJSON(jsonString) {
+        const escaped = escapeHtml(jsonString);
+        return escaped.replace(
+            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+            function (match) {
+                let cls = 'text-primary-fixed-dim'; // number
+                if (/^"/.test(match)) {
+                    cls = /:$/.test(match) ? 'text-secondary' : 'text-tertiary';
+                } else if (/^(true|false)$/.test(match)) {
+                    cls = 'text-primary-fixed';
+                } else if (match === 'null') {
+                    cls = 'text-primary-fixed';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            }
+        );
+    }
+
+    function locateError(text, message) {
+        if (/line \d+/i.test(message)) return '';
+        const posMatch = message.match(/position (\d+)/);
+        if (!posMatch) return '';
+        const pos = parseInt(posMatch[1], 10);
+        const upToError = text.slice(0, pos);
+        const line = (upToError.match(/\n/g) || []).length + 1;
+        const col = pos - upToError.lastIndexOf('\n');
+        return ' (line ' + line + ', column ' + col + ')';
+    }
+
+    function setBadge(state) {
+        if (state === 'valid') {
+            validityBadge.className = 'flex items-center gap-2 px-3 py-1.5 bg-secondary-container/20 border border-secondary/30 rounded-md';
+            validityBadge.innerHTML = '<span class="material-symbols-outlined text-[16px] text-secondary" style="font-variation-settings: \'FILL\' 1;">check_circle</span><span class="font-label-sm text-label-sm text-secondary">Valid JSON</span>';
+        } else if (state === 'invalid') {
+            validityBadge.className = 'flex items-center gap-2 px-3 py-1.5 bg-error-container/20 border border-error/30 rounded-md';
+            validityBadge.innerHTML = '<span class="material-symbols-outlined text-[16px] text-error" style="font-variation-settings: \'FILL\' 1;">error</span><span class="font-label-sm text-label-sm text-error">Invalid JSON</span>';
+        } else {
+            validityBadge.className = 'flex items-center gap-2 px-3 py-1.5 bg-surface-variant/40 border border-outline-variant/50 rounded-md';
+            validityBadge.innerHTML = '<span class="material-symbols-outlined text-[16px] text-on-surface-variant">radio_button_unchecked</span><span class="font-label-sm text-label-sm text-on-surface-variant">Empty</span>';
+        }
+    }
+
+    function render() {
+        const raw = input.value;
+
+        if (raw.trim() === '') {
+            setBadge('empty');
+            isValid = false;
+            currentOutputText = '';
+            outputPre.classList.add('hidden');
+            errorCard.classList.add('hidden');
+            outputPre.innerHTML = '';
+            return;
+        }
+
+        try {
+            currentValue = JSON.parse(raw);
+            isValid = true;
+            setBadge('valid');
+            errorCard.classList.add('hidden');
+            outputPre.classList.remove('hidden');
+
+            currentOutputText = mode === 'pretty'
+                ? JSON.stringify(currentValue, null, 2)
+                : JSON.stringify(currentValue);
+
+            outputPre.classList.toggle('wrap-line', mode === 'minified');
+            outputPre.classList.toggle('wrap-pretty', mode === 'pretty');
+            outputPre.innerHTML = highlightJSON(currentOutputText);
+        } catch (err) {
+            isValid = false;
+            currentOutputText = '';
+            setBadge('invalid');
+            outputPre.classList.add('hidden');
+            errorCard.classList.remove('hidden');
+            errorMessage.textContent = err.message + locateError(raw, err.message);
+        }
+    }
+
+    let debounceTimer;
+    input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(render, 150);
+    });
+
+    beautifyBtn.addEventListener('click', () => {
+        mode = 'pretty';
+        beautifyBtn.classList.add('bg-inverse-primary', 'text-white');
+        minifyBtn.classList.remove('bg-inverse-primary', 'text-white');
+        render();
+    });
+
+    minifyBtn.addEventListener('click', () => {
+        mode = 'minified';
+        minifyBtn.classList.add('bg-inverse-primary', 'text-white');
+        beautifyBtn.classList.remove('bg-inverse-primary', 'text-white');
+        render();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        input.value = '';
+        input.focus();
+        render();
+    });
+
+    async function copy(text, label) {
+        if (!text) {
+            showToast('Nothing to copy');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast(label + ' copied to clipboard');
+        } catch (e) {
+            showToast('Copy failed');
+        }
+    }
+
+    copyInputBtn.addEventListener('click', () => copy(input.value, 'Input'));
+    copyOutputBtn.addEventListener('click', () => copy(currentOutputText, 'Output'));
+
+    downloadBtn.addEventListener('click', () => {
+        if (!isValid || !currentOutputText) {
+            showToast('No valid JSON to download');
+            return;
+        }
+        const blob = new Blob([currentOutputText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = mode === 'minified' ? 'data.min.json' : 'data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    // Initial paint
+    beautifyBtn.classList.add('bg-inverse-primary', 'text-white');
+    render();
+})();
+</script>
+</body></html>
