@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CSV to JSON Converter - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .glass-panel-hover:hover { box-shadow: inset 0 0 0 1px rgba(192, 193, 255, 0.3), 0 0 20px 0 rgba(192, 193, 255, 0.1); }
+    .drop-active { border-color: #c0c1ff !important; background-color: rgba(192, 193, 255, 0.08); }
+</style>
+<script src="../assets/theme-config.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-2">
+<a href="../tools-hub/" class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant dark:hover:bg-surface-container-high rounded-lg mx-2 transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="grid_view">grid_view</span>
+<span class="font-label-sm text-label-sm">All Tools</span>
+</a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="w-full flex flex-col min-h-[calc(100vh-4rem)] pt-16">
+<div class="px-gutter max-w-container-max mx-auto w-full py-margin-md flex-1 flex flex-col gap-margin-md">
+<!-- Header Section -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<span class="bg-secondary/10 text-secondary font-label-sm text-label-sm px-2 py-1 rounded">CONVERTER</span>
+<span class="text-outline font-label-sm text-label-sm">v2.1.0</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">CSV to JSON</h1>
+<p class="text-on-surface-variant max-w-2xl">Transform tabular data into nested JSON structures. Supports custom delimiters, header mapping, and strict type casting for robust integration pipelines.</p>
+</section>
+<!-- Tool Workspace (Bento Grid) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative z-10">
+<!-- Upload Area (Left Column) -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg text-[20px] font-semibold">Input Source</h3>
+<span class="material-symbols-outlined text-outline" data-icon="upload_file">upload_file</span>
+</div>
+<div id="dropZone" tabindex="0" class="border-2 border-dashed border-outline-variant rounded-lg p-8 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors glass-panel-hover min-h-[200px]">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" data-icon="cloud_upload">cloud_upload</span>
+<div>
+<p class="font-semibold text-on-surface">Drag &amp; Drop file</p>
+<p class="text-on-surface-variant text-sm mt-1 font-label-sm text-label-sm">or click to browse</p>
+</div>
+<div class="flex gap-2 mt-2">
+<span class="bg-surface-variant text-on-surface px-2 py-1 rounded text-xs font-label-sm text-label-sm border border-outline-variant/50">.csv</span>
+<span class="bg-surface-variant text-on-surface px-2 py-1 rounded text-xs font-label-sm text-label-sm border border-outline-variant/50">.tsv</span>
+</div>
+<input id="fileInput" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values,text/plain" class="hidden"/>
+</div>
+<div id="fileNameRow" class="hidden items-center gap-2 -mt-2 px-1">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="description">description</span>
+<span id="fileNameText" class="font-label-sm text-label-sm text-on-surface-variant truncate"></span>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Delimiter</label>
+<select id="delimiterSelect" class="bg-surface-container text-on-surface border border-outline-variant rounded p-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow font-label-sm text-label-sm">
+<option value=",">Comma (,)</option>
+<option value=";">Semicolon (;)</option>
+<option value="\t">Tab (\t)</option>
+<option value="|">Pipe (|)</option>
+</select>
+</div>
+<button id="convertBtn" class="bg-primary text-on-primary w-full py-3 rounded-lg font-semibold mt-4 hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.2)]">
+<span class="material-symbols-outlined" data-icon="transform">transform</span>
+                        Convert Data
+                    </button>
+<div id="statusRow" class="flex items-center gap-2 px-3 py-2 bg-surface-variant/40 border border-outline-variant/50 rounded-md">
+<span id="statusIcon" class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="radio_button_unchecked">radio_button_unchecked</span>
+<span id="statusText" class="font-label-sm text-label-sm text-on-surface-variant">Waiting for CSV data</span>
+</div>
+</div>
+</div>
+<!-- Preview Area (Right Column) -->
+<div class="lg:col-span-8 flex flex-col gap-gutter h-full">
+<div class="glass-panel rounded-xl border border-outline-variant/30 flex flex-col h-full overflow-hidden">
+<!-- Preview Tabs -->
+<div class="flex items-center border-b border-outline-variant/30 bg-surface-container-low/50">
+<button id="tabOutputBtn" class="px-6 py-3 border-b-2 border-primary text-primary font-label-sm text-label-sm flex items-center gap-2 bg-surface-variant/20">
+<span class="material-symbols-outlined text-sm" data-icon="code">code</span>
+                            Output JSON
+                        </button>
+<button id="tabInputBtn" class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="table_view">table_view</span>
+                            Input Preview
+                        </button>
+<div class="flex-1"></div>
+<button id="copyBtn" class="p-3 text-on-surface-variant hover:text-primary transition-colors border-l border-outline-variant/30" title="Copy to clipboard">
+<span class="material-symbols-outlined" data-icon="content_copy">content_copy</span>
+</button>
+<button id="downloadBtn" class="p-3 text-on-surface-variant hover:text-primary transition-colors border-l border-outline-variant/30" title="Download JSON">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+<!-- Output JSON Panel -->
+<div id="outputPanel" class="flex-1 bg-[#1E293B] relative font-label-sm text-label-sm p-4 overflow-auto text-sm leading-relaxed min-h-[400px]">
+<!-- Line Numbers -->
+<div id="outputLineNumbers" class="absolute left-0 top-0 bottom-0 w-12 bg-[#0F172A] border-r border-outline-variant/20 flex flex-col items-center py-4 text-outline select-none pointer-events-none">
+<span>1</span>
+</div>
+<div class="pl-10 text-on-surface">
+<pre id="outputPre"><code id="outputCode" class="language-json"></code></pre>
+<div id="emptyState" class="flex items-start gap-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] mt-0.5" data-icon="info">info</span>
+<p class="text-sm leading-relaxed">Upload a CSV/TSV file or paste raw data into the Input Preview tab to see the converted JSON here.</p>
+</div>
+<div id="errorState" class="hidden items-start gap-3 bg-error-container/10 border border-error/40 text-error rounded-lg p-4">
+<span class="material-symbols-outlined text-[20px] mt-0.5" data-icon="error">error</span>
+<div>
+<p class="font-label-sm text-label-sm mb-1">Conversion Error</p>
+<p id="errorMessage" class="text-xs text-error/90 leading-relaxed"></p>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Preview Panel -->
+<div id="inputPanel" class="hidden flex-1 bg-[#1E293B] relative font-label-sm text-label-sm overflow-auto text-sm leading-relaxed min-h-[400px]">
+<textarea id="csvInput" spellcheck="false" class="w-full h-full min-h-[400px] bg-transparent text-on-surface p-4 outline-none resize-none placeholder-on-surface-variant/50 focus:ring-1 focus:ring-primary/50 transition-colors" placeholder="Paste your CSV data here, e.g.&#10;name,role&#10;Alice Smith,Admin&#10;Bob Jones,Editor"></textarea>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto opacity-80 hover:opacity-100 transition-opacity">
+<div class="mb-4 md:mb-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    // ---- Element references ----
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameRow = document.getElementById('fileNameRow');
+    const fileNameText = document.getElementById('fileNameText');
+    const delimiterSelect = document.getElementById('delimiterSelect');
+    const convertBtn = document.getElementById('convertBtn');
+    const statusRow = document.getElementById('statusRow');
+    const statusIcon = document.getElementById('statusIcon');
+    const statusText = document.getElementById('statusText');
+
+    const tabOutputBtn = document.getElementById('tabOutputBtn');
+    const tabInputBtn = document.getElementById('tabInputBtn');
+    const outputPanel = document.getElementById('outputPanel');
+    const inputPanel = document.getElementById('inputPanel');
+    const outputLineNumbers = document.getElementById('outputLineNumbers');
+    const outputCode = document.getElementById('outputCode');
+    const emptyState = document.getElementById('emptyState');
+    const errorState = document.getElementById('errorState');
+    const errorMessage = document.getElementById('errorMessage');
+    const csvInput = document.getElementById('csvInput');
+
+    const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    const toast = document.getElementById('toast');
+
+    // ---- State ----
+    let sourceLabel = 'Pasted Input';
+    let currentOutputText = '';
+    let isValid = false;
+
+    // ---- Toast ----
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    // ---- JSON syntax highlighting (adapted from json_formatter) ----
+    function escapeHtml(str) {
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function highlightJSON(jsonString) {
+        const escaped = escapeHtml(jsonString);
+        return escaped.replace(
+            /("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,
+            function (match) {
+                let cls = 'text-primary-fixed-dim'; // number
+                if (/^"/.test(match)) {
+                    cls = /:$/.test(match) ? 'text-secondary' : 'text-tertiary';
+                } else if (/^(true|false)$/.test(match)) {
+                    cls = 'text-primary-fixed';
+                } else if (match === 'null') {
+                    cls = 'text-primary-fixed';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            }
+        );
+    }
+
+    function updateLineNumbers(count) {
+        const safeCount = Math.max(count, 1);
+        let html = '';
+        for (let i = 1; i <= safeCount; i++) html += '<span>' + i + '</span>';
+        outputLineNumbers.innerHTML = html;
+    }
+
+    // ---- Status badge ----
+    function setStatus(state, text) {
+        if (state === 'success') {
+            statusRow.className = 'flex items-center gap-2 px-3 py-2 bg-secondary-container/20 border border-secondary/30 rounded-md';
+            statusIcon.className = 'material-symbols-outlined text-[16px] text-secondary';
+            statusIcon.style.fontVariationSettings = "'FILL' 1";
+            statusIcon.textContent = 'check_circle';
+            statusText.className = 'font-label-sm text-label-sm text-secondary';
+        } else if (state === 'error') {
+            statusRow.className = 'flex items-center gap-2 px-3 py-2 bg-error-container/20 border border-error/30 rounded-md';
+            statusIcon.className = 'material-symbols-outlined text-[16px] text-error';
+            statusIcon.style.fontVariationSettings = "'FILL' 1";
+            statusIcon.textContent = 'error';
+            statusText.className = 'font-label-sm text-label-sm text-error';
+        } else {
+            statusRow.className = 'flex items-center gap-2 px-3 py-2 bg-surface-variant/40 border border-outline-variant/50 rounded-md';
+            statusIcon.className = 'material-symbols-outlined text-[16px] text-on-surface-variant';
+            statusIcon.style.fontVariationSettings = '';
+            statusIcon.textContent = 'radio_button_unchecked';
+            statusText.className = 'font-label-sm text-label-sm text-on-surface-variant';
+        }
+        statusText.textContent = text;
+    }
+
+    // ---- CSV Parser ----
+    // Hand-written RFC4180-style tokenizer: supports quoted fields containing
+    // delimiters/newlines, and escaped double-quotes ("").
+    function resolveDelimiter(value) {
+        if (value === '\\t') return '\t';
+        return value;
+    }
+
+    function tokenizeCSV(text, delimiter) {
+        const rows = [];
+        let row = [];
+        let field = '';
+        let inQuotes = false;
+        let i = 0;
+        const len = text.length;
+
+        while (i < len) {
+            const char = text[i];
+
+            if (inQuotes) {
+                if (char === '"') {
+                    if (text[i + 1] === '"') {
+                        field += '"';
+                        i += 2;
+                        continue;
+                    }
+                    inQuotes = false;
+                    i++;
+                    continue;
+                }
+                field += char;
+                i++;
+                continue;
+            }
+
+            if (char === '"') {
+                inQuotes = true;
+                i++;
+                continue;
+            }
+            if (char === delimiter) {
+                row.push(field);
+                field = '';
+                i++;
+                continue;
+            }
+            if (char === '\r') {
+                i++;
+                continue;
+            }
+            if (char === '\n') {
+                row.push(field);
+                rows.push(row);
+                row = [];
+                field = '';
+                i++;
+                continue;
+            }
+            field += char;
+            i++;
+        }
+
+        if (inQuotes) {
+            throw new Error('Unterminated quoted field detected. Check for a missing closing " character.');
+        }
+
+        if (field.length > 0 || row.length > 0) {
+            row.push(field);
+            rows.push(row);
+        }
+
+        return rows;
+    }
+
+    function parseCSV(text, delimiter) {
+        const rows = tokenizeCSV(text, delimiter);
+        const nonEmptyRows = rows.filter(r => !(r.length === 1 && r[0].trim() === ''));
+
+        if (nonEmptyRows.length === 0) {
+            return { headers: [], data: [] };
+        }
+
+        const rawHeaders = nonEmptyRows[0];
+        const seen = Object.create(null);
+        const headers = rawHeaders.map((h, idx) => {
+            let name = (h || '').trim();
+            if (name === '') name = 'column_' + (idx + 1);
+            if (seen[name]) {
+                seen[name]++;
+                name = name + '_' + seen[name];
+            } else {
+                seen[name] = 1;
+            }
+            return name;
+        });
+
+        const data = [];
+        for (let r = 1; r < nonEmptyRows.length; r++) {
+            const row = nonEmptyRows[r];
+            const obj = {};
+            for (let c = 0; c < headers.length; c++) {
+                obj[headers[c]] = row[c] !== undefined ? row[c] : '';
+            }
+            data.push(obj);
+        }
+
+        return { headers, data };
+    }
+
+    // ---- Rendering ----
+    function showEmptyState() {
+        outputCode.parentElement.classList.add('hidden');
+        errorState.classList.remove('flex');
+        errorState.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        updateLineNumbers(1);
+    }
+
+    function showOutput(text) {
+        emptyState.classList.add('hidden');
+        errorState.classList.add('hidden');
+        errorState.classList.remove('flex');
+        outputCode.parentElement.classList.remove('hidden');
+        outputCode.innerHTML = highlightJSON(text);
+        updateLineNumbers(text.split('\n').length);
+    }
+
+    function showErrorState(message) {
+        emptyState.classList.add('hidden');
+        outputCode.parentElement.classList.add('hidden');
+        errorState.classList.remove('hidden');
+        errorState.classList.add('flex');
+        errorMessage.textContent = message;
+        updateLineNumbers(1);
+    }
+
+    function process() {
+        const raw = csvInput.value;
+        const delimiter = resolveDelimiter(delimiterSelect.value);
+
+        if (!raw || raw.trim() === '') {
+            isValid = false;
+            currentOutputText = '';
+            setStatus('empty', 'Waiting for CSV data');
+            showEmptyState();
+            return;
+        }
+
+        try {
+            const { headers, data } = parseCSV(raw, delimiter);
+
+            if (headers.length === 0 || data.length === 0) {
+                throw new Error('No data rows found. CSV must contain a header row plus at least one data row.');
+            }
+
+            const result = {
+                metadata: {
+                    source: sourceLabel,
+                    records: data.length
+                },
+                data: data
+            };
+
+            currentOutputText = JSON.stringify(result, null, 2);
+            isValid = true;
+            showOutput(currentOutputText);
+            setStatus(
+                'success',
+                data.length + ' row' + (data.length === 1 ? '' : 's') + ' × ' +
+                headers.length + ' column' + (headers.length === 1 ? '' : 's') + ' parsed'
+            );
+        } catch (err) {
+            isValid = false;
+            currentOutputText = '';
+            showErrorState(err.message);
+            setStatus('error', 'Parse error');
+        }
+    }
+
+    // ---- Real-time conversion (debounced) ----
+    let debounceTimer;
+    csvInput.addEventListener('input', () => {
+        sourceLabel = 'Pasted Input';
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(process, 150);
+    });
+
+    delimiterSelect.addEventListener('change', () => {
+        clearTimeout(debounceTimer);
+        process();
+    });
+
+    convertBtn.addEventListener('click', () => {
+        clearTimeout(debounceTimer);
+        process();
+        if (isValid) showToast('Converted to JSON');
+    });
+
+    // ---- File upload (click to browse + drag & drop) ----
+    function loadFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            csvInput.value = String(reader.result || '');
+            sourceLabel = file.name;
+            fileNameText.textContent = file.name;
+            fileNameRow.classList.remove('hidden');
+            fileNameRow.classList.add('flex');
+            clearTimeout(debounceTimer);
+            process();
+        };
+        reader.onerror = () => {
+            showToast('Failed to read file');
+        };
+        reader.readAsText(file);
+    }
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files && fileInput.files[0]) {
+            loadFile(fileInput.files[0]);
+        }
+        fileInput.value = '';
+    });
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.add('drop-active');
+        });
+    });
+
+    ['dragleave', 'dragend'].forEach(evt => {
+        dropZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            dropZone.classList.remove('drop-active');
+        });
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropZone.classList.remove('drop-active');
+        const files = e.dataTransfer && e.dataTransfer.files;
+        if (files && files[0]) {
+            loadFile(files[0]);
+        }
+    });
+
+    // ---- Tabs ----
+    const activeTabClass = 'px-6 py-3 border-b-2 border-primary text-primary font-label-sm text-label-sm flex items-center gap-2 bg-surface-variant/20';
+    const inactiveTabClass = 'px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-2';
+
+    function showOutputTab() {
+        tabOutputBtn.className = activeTabClass;
+        tabInputBtn.className = inactiveTabClass;
+        outputPanel.classList.remove('hidden');
+        inputPanel.classList.add('hidden');
+    }
+
+    function showInputTab() {
+        tabInputBtn.className = activeTabClass;
+        tabOutputBtn.className = inactiveTabClass;
+        inputPanel.classList.remove('hidden');
+        outputPanel.classList.add('hidden');
+    }
+
+    tabOutputBtn.addEventListener('click', showOutputTab);
+    tabInputBtn.addEventListener('click', showInputTab);
+
+    // ---- Copy / Download ----
+    async function copyOutput() {
+        if (!isValid || !currentOutputText) {
+            showToast('Nothing to copy');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(currentOutputText);
+            showToast('JSON copied to clipboard');
+        } catch (e) {
+            showToast('Copy failed');
+        }
+    }
+
+    function downloadOutput() {
+        if (!isValid || !currentOutputText) {
+            showToast('No valid JSON to download');
+            return;
+        }
+        const base = sourceLabel.replace(/\.(csv|tsv|txt)$/i, '').replace(/[^a-z0-9_\-]+/gi, '_') || 'data';
+        const blob = new Blob([currentOutputText], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = base + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    copyBtn.addEventListener('click', copyOutput);
+    downloadBtn.addEventListener('click', downloadOutput);
+
+    // ---- Initial paint ----
+    showOutputTab();
+    showEmptyState();
+    setStatus('empty', 'Waiting for CSV data');
+})();
+</script>
+</body></html>

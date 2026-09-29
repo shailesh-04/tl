@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CSV to JSON Converter - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c7c4d7",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed": "#e1e0ff",
+                        "inverse-primary": "#494bd6",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "secondary": "#4edea3",
+                        "on-primary-container": "#0d0096",
+                        "primary-container": "#8083ff",
+                        "inverse-on-surface": "#283044",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#3e2400",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#07006c",
+                        "tertiary": "#ffb95f",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#472a00",
+                        "outline-variant": "#464554",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "surface-bright": "#31394d",
+                        "surface-tint": "#c0c1ff",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#00a572",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-surface": "#dae2fd",
+                        "primary": "#c0c1ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#ca8100",
+                        "on-primary": "#1000a9",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container": "#171f33",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-sm": "16px",
+                        "margin-lg": "80px",
+                        "margin-md": "40px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Geist"],
+                        "label-sm": ["JetBrains Mono"],
+                        "display-lg": ["Geist"],
+                        "body-md": ["Geist"],
+                        "headline-lg-mobile": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass-panel-hover:hover { box-shadow: inset 0 0 0 1px rgba(192, 193, 255, 0.3), 0 0 20px 0 rgba(192, 193, 255, 0.1); }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body-md text-body-md">
+<!-- NavigationDrawer (SideNav - Desktop) -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface-container-low transition-all duration-200 ease-in-out z-40">
+<div class="p-gutter border-b border-outline-variant/30">
+<h1 class="font-headline-lg text-headline-lg text-primary">TL Engine</h1>
+</div>
+<div class="flex-1 overflow-y-auto py-margin-sm">
+<ul class="space-y-base">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                        All Tools
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-sm text-label-sm shadow-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="transform" data-weight="fill" style="font-variation-settings: 'FILL' 1;">transform</span>
+                        Converters
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                        Generators
+                    </a>
+</li>
+<li class="mt-margin-md">
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg transition-colors font-label-sm text-label-sm" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- TopAppBar (Mobile & Desktop Content Header) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform lg:pl-64">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-4">
+<button class="lg:hidden text-primary hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface hidden md:block">Tools Library</span>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-container-max mx-auto px-margin-sm md:px-gutter pt-24 pb-margin-lg lg:pl-[calc(16rem+24px)] flex flex-col gap-margin-md relative">
+<!-- Header Section -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<span class="bg-secondary/10 text-secondary font-label-sm text-label-sm px-2 py-1 rounded">CONVERTER</span>
+<span class="text-outline font-label-sm text-label-sm">v2.1.0</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface">CSV to JSON</h1>
+<p class="text-on-surface-variant max-w-2xl">Transform tabular data into nested JSON structures. Supports custom delimiters, header mapping, and strict type casting for robust integration pipelines.</p>
+</section>
+<!-- Tool Workspace (Bento Grid) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter relative z-10">
+<!-- Upload Area (Left Column) -->
+<div class="lg:col-span-4 flex flex-col gap-gutter">
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-4 border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="flex items-center justify-between">
+<h3 class="font-headline-lg text-[20px] font-semibold">Input Source</h3>
+<span class="material-symbols-outlined text-outline" data-icon="upload_file">upload_file</span>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-8 flex flex-col items-center justify-center text-center gap-3 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors glass-panel-hover min-h-[200px]">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant" data-icon="cloud_upload">cloud_upload</span>
+<div>
+<p class="font-semibold text-on-surface">Drag &amp; Drop file</p>
+<p class="text-on-surface-variant text-sm mt-1 font-label-sm text-label-sm">or click to browse</p>
+</div>
+<div class="flex gap-2 mt-2">
+<span class="bg-surface-variant text-on-surface px-2 py-1 rounded text-xs font-label-sm text-label-sm border border-outline-variant/50">.csv</span>
+<span class="bg-surface-variant text-on-surface px-2 py-1 rounded text-xs font-label-sm text-label-sm border border-outline-variant/50">.tsv</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Delimiter</label>
+<select class="bg-surface-container text-on-surface border border-outline-variant rounded p-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow font-label-sm text-label-sm">
+<option value=",">Comma (,)</option>
+<option value=";">Semicolon (;)</option>
+<option value="\t">Tab (\t)</option>
+<option value="|">Pipe (|)</option>
+</select>
+</div>
+<button class="bg-primary text-on-primary w-full py-3 rounded-lg font-semibold mt-4 hover:bg-primary-fixed transition-colors flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(192,193,255,0.2)]">
+<span class="material-symbols-outlined" data-icon="transform">transform</span>
+                        Convert Data
+                    </button>
+</div>
+</div>
+<!-- Preview Area (Right Column) -->
+<div class="lg:col-span-8 flex flex-col gap-gutter h-full">
+<div class="glass-panel rounded-xl border border-outline-variant/30 flex flex-col h-full overflow-hidden">
+<!-- Preview Tabs -->
+<div class="flex items-center border-b border-outline-variant/30 bg-surface-container-low/50">
+<button class="px-6 py-3 border-b-2 border-primary text-primary font-label-sm text-label-sm flex items-center gap-2 bg-surface-variant/20">
+<span class="material-symbols-outlined text-sm" data-icon="code">code</span>
+                            Output JSON
+                        </button>
+<button class="px-6 py-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="table_view">table_view</span>
+                            Input Preview
+                        </button>
+<div class="flex-1"></div>
+<button class="p-3 text-on-surface-variant hover:text-primary transition-colors border-l border-outline-variant/30" title="Copy to clipboard">
+<span class="material-symbols-outlined" data-icon="content_copy">content_copy</span>
+</button>
+<button class="p-3 text-on-surface-variant hover:text-primary transition-colors border-l border-outline-variant/30" title="Download JSON">
+<span class="material-symbols-outlined" data-icon="download">download</span>
+</button>
+</div>
+<!-- Code Editor View -->
+<div class="flex-1 bg-[#1E293B] relative font-label-sm text-label-sm p-4 overflow-auto text-sm leading-relaxed min-h-[400px]">
+<!-- Line Numbers -->
+<div class="absolute left-0 top-0 bottom-0 w-12 bg-[#0F172A] border-r border-outline-variant/20 flex flex-col items-center py-4 text-outline select-none pointer-events-none">
+<span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+</div>
+<div class="pl-10 text-on-surface">
+<pre><code class="language-json">{
+  <span class="text-[#ca8100]">"metadata"</span>: {
+    <span class="text-[#ca8100]">"source"</span>: <span class="text-[#4edea3]">"users_export.csv"</span>,
+    <span class="text-[#ca8100]">"records"</span>: <span class="text-[#8083ff]">2</span>
+  },
+  <span class="text-[#ca8100]">"data"</span>: [
+    {
+      <span class="text-[#ca8100]">"id"</span>: <span class="text-[#8083ff]">1</span>,
+      <span class="text-[#ca8100]">"name"</span>: <span class="text-[#4edea3]">"Alice Smith"</span>,
+      <span class="text-[#ca8100]">"role"</span>: <span class="text-[#4edea3]">"Admin"</span>
+    },
+    {
+      <span class="text-[#ca8100]">"id"</span>: <span class="text-[#8083ff]">2</span>,
+      <span class="text-[#ca8100]">"name"</span>: <span class="text-[#4edea3]">"Bob Jones"</span>,
+      <span class="text-[#ca8100]">"role"</span>: <span class="text-[#4edea3]">"Editor"</span>
+    }
+  ]
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest border-t border-outline-variant lg:pl-64">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto gap-4">
+<span class="font-label-sm font-bold text-on-surface">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+<div class="flex gap-6 font-label-sm text-label-sm">
+<a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Documentation</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Open Source</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a>
+<a class="text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a>
+</div>
+</div>
+</footer>
+</body></html>
