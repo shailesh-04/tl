@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tools Library - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glass-panel:hover {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 20px rgba(192, 193, 255, 0.05);
+    }
+    .text-glow {
+        text-shadow: 0 0 10px rgba(192, 193, 255, 0.3);
+    }
+    /* Custom scrollbar for webkit */
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255,255,255,0.2);
+    }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+<script src="../assets/theme-config.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-16 w-full flex flex-col min-h-[calc(100vh-4rem)]">
+<div class="px-gutter max-w-container-max mx-auto w-full py-margin-md flex-1 flex flex-col gap-8">
+<!-- Hero Section -->
+<section class="flex flex-col gap-6 relative rounded-2xl overflow-hidden glass-panel p-6 md:p-10 border border-outline-variant/30">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent pointer-events-none"></div>
+<div class="relative z-10 max-w-2xl">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2 tracking-tight">Professional Utility Suite.</h1>
+<p class="text-on-surface-variant font-body-md text-body-md mb-8 max-w-lg">High-performance tools for data processing, text manipulation, and security operations.</p>
+<!-- Search Bar -->
+<div class="relative max-w-xl group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+<input id="toolSearchInput" class="w-full bg-surface-container-highest border border-outline-variant/50 text-on-surface font-body-md text-body-md rounded-lg py-4 pl-12 pr-4 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/50" placeholder="Search for tools..." type="text"/>
+<div class="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant/50 bg-surface-container-lowest px-2 py-1 rounded border border-outline-variant/30 hidden sm:inline-block">⌘K</span>
+</div>
+</div>
+</div>
+<!-- Stats Row -->
+<div class="relative z-10 flex flex-wrap gap-4 mt-4">
+<div class="flex items-center gap-2 bg-surface-container/50 border border-outline-variant/20 rounded-full px-4 py-2">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">speed</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Fast &amp; Private</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-container/50 border border-outline-variant/20 rounded-full px-4 py-2">
+<span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">8 Tools Available</span>
+</div>
+</div>
+</section>
+<!-- Category Filters -->
+<section class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+<button data-filter="all" class="filter-chip px-6 py-2 rounded-full bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-transparent shadow-[0_0_15px_rgba(192,193,255,0.15)]">All</button>
+<button data-filter="data" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Data</button>
+<button data-filter="text" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Text</button>
+<button data-filter="security" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Security</button>
+<button data-filter="images" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Images</button>
+<button data-filter="media" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Media</button>
+<button data-filter="generators" class="filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors">Generators</button>
+</section>
+<!-- Tools Grid -->
+<section id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Converters section -->
+<div id="converters" class="contents">
+<!-- Card 0: XLSX to JSON -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../to-json/" data-name="XLSX to JSON Converter" data-desc="Convert Excel spreadsheets (.xlsx, .xls) to JSON. Great for data migration and API integration." data-category="data">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center border border-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-2xl">table_view</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase bg-secondary/10 px-2 py-1 rounded">Data Converter</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-secondary transition-colors">XLSX to JSON</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Convert Excel spreadsheets (.xlsx, .xls) to JSON. Great for data migration and API integration.</p>
+</div>
+</a>
+<!-- Card 1: CSV to JSON (Hero Card) -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 sm:col-span-2 lg:col-span-1 min-h-[240px]" href="../csv-to-json/" data-name="CSV to JSON Converter" data-desc="Convert CSV spreadsheets into structured JSON arrays instantly. Runs entirely in your browser." data-category="data">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-primary-container/20 flex items-center justify-center border border-primary/20 text-primary">
+<span class="material-symbols-outlined text-2xl">table_chart</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary uppercase bg-primary/10 px-2 py-1 rounded">Data Converter</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile md:font-headline-lg md:text-headline-lg text-on-surface mb-2 font-bold group-hover:text-primary transition-colors">CSV to JSON Converter</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Convert CSV spreadsheets into structured JSON arrays instantly. Runs entirely in your browser.</p>
+</div>
+</a>
+<!-- Card 3: Base64 Encode/Decode -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../base64-encoder-decoder/" data-name="Base64 Encoder/Decoder" data-desc="Safely encode or decode Base64 strings. Supports file uploads." data-category="security">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/20 flex items-center justify-center border border-tertiary/20 text-tertiary">
+<span class="material-symbols-outlined text-2xl">password</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary uppercase bg-tertiary/10 px-2 py-1 rounded">Security</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-tertiary transition-colors">Base64 Encoder/Decoder</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Safely encode or decode Base64 strings. Supports file uploads.</p>
+</div>
+</a>
+<!-- Card 7: Image Optimizer -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../image-optimizer/" data-name="Image Optimizer" data-desc="Compress and resize images directly in your browser for faster websites." data-category="images">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-tertiary-container/20 flex items-center justify-center border border-tertiary/20 text-tertiary">
+<span class="material-symbols-outlined text-2xl">image</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary uppercase bg-tertiary/10 px-2 py-1 rounded">Images</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-tertiary transition-colors">Image Optimizer</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Compress and resize images directly in your browser for faster websites.</p>
+</div>
+</a>
+<!-- Card 8: Video Converter -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../video-converter/" data-name="Video Converter" data-desc="Batch convert videos to MP4, WebM, MOV, MKV, AVI, GIF or MP3 right in your browser." data-category="media">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center border border-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-2xl">movie</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase bg-secondary/10 px-2 py-1 rounded">Media</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-secondary transition-colors">Video Converter</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Batch convert videos to MP4, WebM, MOV, MKV, AVI, GIF or MP3 right in your browser.</p>
+</div>
+</a>
+</div>
+<!-- Data Processing section -->
+<div id="data-processing" class="contents">
+<!-- Card 2: JSON Formatter -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../json-formatter/" data-name="JSON Formatter &amp; Validator" data-desc="Format, validate, and minify JSON payloads with syntax highlighting." data-category="data">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center border border-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-2xl">data_object</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase bg-secondary/10 px-2 py-1 rounded">Data</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-secondary transition-colors">JSON Formatter &amp; Validator</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Format, validate, and minify JSON payloads with syntax highlighting.</p>
+</div>
+</a>
+<!-- Card 4: Regex Tester -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../regex-tester/" data-name="Regex Tester" data-desc="Test regular expressions against sample text with real-time matching highlights." data-category="text">
+<div class="absolute inset-0 bg-gradient-to-br from-error/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-error-container/20 flex items-center justify-center border border-error/20 text-error">
+<span class="material-symbols-outlined text-2xl">match_word</span>
+</div>
+<span class="font-label-sm text-label-sm text-error uppercase bg-error/10 px-2 py-1 rounded">Text</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-error transition-colors">Regex Tester</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Test regular expressions against sample text with real-time matching highlights.</p>
+</div>
+</a>
+<!-- Card 6: Markdown Previewer -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../markdown-previewer/" data-name="Markdown Previewer" data-desc="Preview Markdown as formatted HTML side-by-side while you type." data-category="text">
+<div class="absolute inset-0 bg-gradient-to-br from-secondary/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-secondary-container/20 flex items-center justify-center border border-secondary/20 text-secondary">
+<span class="material-symbols-outlined text-2xl">article</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary uppercase bg-secondary/10 px-2 py-1 rounded">Text</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-secondary transition-colors">Markdown Previewer</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Preview Markdown as formatted HTML side-by-side while you type.</p>
+</div>
+</a>
+</div>
+<!-- Generators section -->
+<div id="generators" class="contents">
+<!-- Card 5: UUID Generator -->
+<a class="tool-card group relative flex flex-col glass-panel rounded-xl p-6 transition-all duration-300 min-h-[240px]" href="../uuid-generator/" data-name="UUID Generator" data-desc="Generate bulk v4 UUIDs for database seeding and testing." data-category="generators">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-fixed/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex justify-between items-start mb-6 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-primary-fixed/20 flex items-center justify-center border border-primary-fixed/20 text-primary-fixed">
+<span class="material-symbols-outlined text-2xl">fingerprint</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase bg-primary-fixed/10 px-2 py-1 rounded">Generators</span>
+</div>
+<div class="relative z-10 mt-auto">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-2 font-semibold group-hover:text-primary-fixed transition-colors">UUID Generator</h3>
+<p class="text-on-surface-variant font-body-md text-body-md line-clamp-2">Generate bulk v4 UUIDs for database seeding and testing.</p>
+</div>
+</a>
+</div>
+</section>
+<!-- Empty State -->
+<div id="emptyState" class="hidden flex-col items-center justify-center text-center py-20 gap-4">
+<span class="material-symbols-outlined text-5xl text-on-surface-variant/40">search_off</span>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">No tools found</h3>
+<p class="text-on-surface-variant text-sm max-w-sm">Try a different search term or clear the filters to see all available tools.</p>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto opacity-80 hover:opacity-100 transition-opacity">
+<div class="mb-4 md:mb-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const toast = document.getElementById('toast');
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('toolSearchInput');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const toolCards = document.querySelectorAll('.tool-card');
+    const emptyState = document.getElementById('emptyState');
+
+    let activeCategory = 'all';
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    // --- Search / category filtering ---
+    function applyFilters() {
+        const query = searchInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        toolCards.forEach((card) => {
+            const name = (card.dataset.name || '').toLowerCase();
+            const desc = (card.dataset.desc || '').toLowerCase();
+            const category = (card.dataset.category || '').toLowerCase();
+
+            const matchesQuery = !query || name.includes(query) || desc.includes(query) || category.includes(query);
+            const matchesCategory = activeCategory === 'all' || category === activeCategory;
+            const visible = matchesQuery && matchesCategory;
+
+            card.classList.toggle('hidden', !visible);
+            if (visible) visibleCount++;
+        });
+
+        const isEmpty = visibleCount === 0;
+        emptyState.classList.toggle('hidden', !isEmpty);
+        emptyState.classList.toggle('flex', isEmpty);
+    }
+
+    let debounceTimer;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(applyFilters, 100);
+    });
+
+    function setActiveChip(chip) {
+        filterChips.forEach((c) => {
+            if (c === chip) {
+                c.className = 'filter-chip px-6 py-2 rounded-full bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-transparent shadow-[0_0_15px_rgba(192,193,255,0.15)]';
+            } else {
+                c.className = 'filter-chip px-6 py-2 rounded-full bg-surface-container-highest text-on-surface-variant hover:text-on-surface hover:bg-surface-bright font-label-sm text-label-sm uppercase tracking-wider whitespace-nowrap border border-outline-variant/30 transition-colors';
+            }
+        });
+    }
+
+    filterChips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+            activeCategory = chip.dataset.filter || 'all';
+            setActiveChip(chip);
+            applyFilters();
+        });
+    });
+
+    // --- Top bar search icon: reveal + focus the hero search box ---
+    searchBtn.addEventListener('click', () => {
+        searchInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        searchInput.focus();
+    });
+
+    // --- Keyboard shortcut: Cmd/Ctrl+K focuses search ---
+    window.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+        }
+    });
+
+    // Initial paint
+    applyFilters();
+})();
+</script>
+</body></html>
