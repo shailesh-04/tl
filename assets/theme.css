@@ -1,0 +1,35 @@
+/* Shared base styles for every page on this site. Page-specific styles
+   (drop zones, editors, sliders, etc.) stay local to each page's own
+   inline <style> block — only truly universal rules live here. */
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+::selection {
+    background: #c0c1ff;
+    color: #1000a9;
+}
+
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #171f33;
+    color: #dae2fd;
+    border: 1px solid #464554;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 100;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
