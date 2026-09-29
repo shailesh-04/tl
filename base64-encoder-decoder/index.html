@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Base64 Encoder/Decoder - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    body {
+        background-color: #020617; /* Deepest slate */
+    }
+    .glass-card {
+        background-color: rgba(15, 23, 42, 0.7); /* #0F172A */
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .input-field {
+        background-color: #1E293B;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .input-field:focus {
+        border-color: #c0c1ff; /* primary */
+        box-shadow: 0 0 0 2px rgba(192, 193, 255, 0.2);
+        outline: none;
+    }
+    /* Custom Toggle Switch */
+    .toggle-checkbox:checked {
+        right: 0;
+        border-color: #c0c1ff;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+        background-color: #8083ff; /* primary-container */
+    }
+    .toggle-checkbox:checked + .toggle-label:after {
+        transform: translateX(100%);
+        border-color: white;
+    }
+</style>
+<script src="../assets/theme-config.js"></script>
+</head>
+<body class="bg-background text-on-background font-body-md text-body-md antialiased min-h-screen flex flex-col selection:bg-primary selection:text-on-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-4">
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+<a href="../tools-hub/" class="px-4 py-2 rounded border border-white/20 text-on-surface hover:bg-white/10 font-label-sm text-label-sm transition-colors flex items-center gap-2 active:scale-95">
+<span class="material-symbols-outlined text-[16px]" data-icon="grid_view">grid_view</span>
+                    All Tools
+                </a>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="pt-16 w-full flex flex-col min-h-[calc(100vh-4rem)]">
+<div class="px-gutter max-w-container-max mx-auto w-full py-margin-md flex-1 flex flex-col">
+<div class="mb-margin-md">
+<div class="flex items-center gap-2 mb-2">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded bg-secondary/10 text-secondary font-label-sm text-label-sm">CONVERTER</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Base64 Encoder/Decoder</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Convert text or binary data back and forth using standard Base64 encoding. Optimized for speed and large datasets.</p>
+</div>
+<!-- Tool UI Bento Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Input Area -->
+<div class="glass-card rounded-xl p-margin-sm flex flex-col h-[500px]">
+<div class="flex items-center justify-between mb-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant">INPUT</label>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="modeLabel">Encode</span>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-200 ease-in-out left-0 top-0" id="modeToggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-surface-variant cursor-pointer" for="modeToggle"></label>
+</div>
+</div>
+</div>
+<textarea class="input-field flex-1 w-full rounded-lg p-4 font-body-md text-body-md text-on-surface resize-none font-mono" id="inputArea" placeholder="Paste your text or data here..."></textarea>
+<div class="flex justify-end mt-4 gap-4">
+<button id="clearBtn" class="px-4 py-2 rounded border border-white/20 text-on-surface hover:bg-white/10 font-label-sm text-label-sm transition-colors flex items-center gap-2 active:scale-95">
+<span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span>
+                            Clear
+                        </button>
+</div>
+</div>
+<!-- Output Area -->
+<div class="glass-card rounded-xl p-margin-sm flex flex-col h-[500px]">
+<div class="flex items-center justify-between mb-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant">OUTPUT</label>
+<span class="inline-flex items-center justify-center px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm" id="outputFormatLabel">Base64</span>
+</div>
+<textarea class="input-field flex-1 w-full rounded-lg p-4 font-body-md text-body-md text-on-surface resize-none font-mono" id="outputArea" placeholder="Result will appear here..." readonly=""></textarea>
+<p id="outputError" class="hidden text-xs text-error mt-2 items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] align-middle" data-icon="error">error</span>
+<span id="outputErrorText">Invalid Base64 input — unable to decode.</span>
+</p>
+<div class="flex justify-end mt-4">
+<button id="copyBtn" class="px-6 py-2 rounded bg-inverse-primary text-white font-label-sm text-label-sm transition-colors hover:bg-primary-container flex items-center gap-2 active:scale-95 shadow-[0_0_15px_rgba(73,75,214,0.3)]">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+                            Copy Result
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-auto bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto">
+<div class="font-label-sm font-bold text-on-surface mb-4 md:mb-0">
+                    © 2026 TL - Tools Library. Professional Utility Suite.
+                </div>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a>
+</div>
+</div>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    const toggle = document.getElementById('modeToggle');
+    const modeLabel = document.getElementById('modeLabel');
+    const outputFormatLabel = document.getElementById('outputFormatLabel');
+    const inputArea = document.getElementById('inputArea');
+    const outputArea = document.getElementById('outputArea');
+    const outputError = document.getElementById('outputError');
+    const outputErrorText = document.getElementById('outputErrorText');
+    const clearBtn = document.getElementById('clearBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const toast = document.getElementById('toast');
+
+    const NORMAL_BADGE_CLASS = 'inline-flex items-center justify-center px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm';
+    const ERROR_BADGE_CLASS = 'inline-flex items-center justify-center px-2 py-1 rounded bg-error-container/20 text-error border border-error/30 font-label-sm text-label-sm';
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => toast.classList.remove('show'), 1600);
+    }
+
+    // Convert arbitrary UTF-8 text to a Base64 string without corrupting
+    // non-Latin1 characters (plain btoa(str) breaks on those).
+    function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+        }
+        return btoa(binary);
+    }
+
+    // Convert a Base64 string back to UTF-8 text. Throws on invalid Base64
+    // or on byte sequences that are not valid UTF-8.
+    function base64ToUtf8(b64) {
+        const binary = atob(b64);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+    }
+
+    function showError(message) {
+        outputErrorText.textContent = message;
+        outputError.classList.remove('hidden');
+        outputError.classList.add('flex');
+        outputFormatLabel.textContent = 'Error';
+        outputFormatLabel.className = ERROR_BADGE_CLASS;
+    }
+
+    function hideError() {
+        outputError.classList.add('hidden');
+        outputError.classList.remove('flex');
+        outputFormatLabel.textContent = toggle.checked ? 'Plain Text' : 'Base64';
+        outputFormatLabel.className = NORMAL_BADGE_CLASS;
+    }
+
+    function convert() {
+        const raw = inputArea.value;
+
+        if (raw === '') {
+            outputArea.value = '';
+            hideError();
+            return;
+        }
+
+        if (!toggle.checked) {
+            // Encode mode
+            try {
+                outputArea.value = utf8ToBase64(raw);
+                hideError();
+            } catch (e) {
+                outputArea.value = '';
+                showError('Unable to encode this input.');
+            }
+        } else {
+            // Decode mode
+            try {
+                const cleaned = raw.replace(/\s+/g, '');
+                outputArea.value = base64ToUtf8(cleaned);
+                hideError();
+            } catch (e) {
+                outputArea.value = '';
+                showError('Invalid Base64 input — unable to decode.');
+            }
+        }
+    }
+
+    let debounceTimer;
+    inputArea.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(convert, 150);
+    });
+
+    toggle.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            modeLabel.textContent = 'Decode';
+            inputArea.placeholder = 'Paste your Base64 string here...';
+        } else {
+            modeLabel.textContent = 'Encode';
+            inputArea.placeholder = 'Paste your text or data here...';
+        }
+        // Clear on mode switch
+        inputArea.value = '';
+        outputArea.value = '';
+        hideError();
+    });
+
+    clearBtn.addEventListener('click', () => {
+        inputArea.value = '';
+        outputArea.value = '';
+        hideError();
+        inputArea.focus();
+    });
+
+    copyBtn.addEventListener('click', async () => {
+        if (!outputArea.value) {
+            showToast('Nothing to copy');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(outputArea.value);
+            showToast('Result copied to clipboard');
+        } catch (e) {
+            showToast('Copy failed');
+        }
+    });
+
+    // Initial paint
+    hideError();
+})();
+</script>
+</body></html>

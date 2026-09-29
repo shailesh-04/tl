@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Base64 Encoder/Decoder - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#c7c4d7",
+                        "on-secondary-fixed-variant": "#005236",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "primary-fixed": "#e1e0ff",
+                        "inverse-primary": "#494bd6",
+                        "on-secondary-container": "#00311f",
+                        "tertiary-fixed-dim": "#ffb95f",
+                        "on-error-container": "#ffdad6",
+                        "on-surface": "#dae2fd",
+                        "error-container": "#93000a",
+                        "secondary": "#4edea3",
+                        "on-primary-container": "#0d0096",
+                        "primary-container": "#8083ff",
+                        "inverse-on-surface": "#283044",
+                        "surface": "#0b1326",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#653e00",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-tertiary-fixed": "#2a1700",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#3e2400",
+                        "on-secondary": "#003824",
+                        "on-primary-fixed": "#07006c",
+                        "tertiary": "#ffb95f",
+                        "secondary-fixed-dim": "#4edea3",
+                        "on-tertiary": "#472a00",
+                        "outline-variant": "#464554",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#6ffbbe",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-highest": "#2d3449",
+                        "surface-bright": "#31394d",
+                        "surface-tint": "#c0c1ff",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#00a572",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-fixed": "#002113",
+                        "inverse-surface": "#dae2fd",
+                        "primary": "#c0c1ff",
+                        "on-error": "#690005",
+                        "tertiary-container": "#ca8100",
+                        "on-primary": "#1000a9",
+                        "tertiary-fixed": "#ffddb8",
+                        "surface-container": "#171f33",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-max": "1280px",
+                        "margin-sm": "16px",
+                        "margin-lg": "80px",
+                        "margin-md": "40px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Geist", "sans-serif"],
+                        "label-sm": ["JetBrains Mono", "monospace"],
+                        "display-lg": ["Geist", "sans-serif"],
+                        "body-md": ["Geist", "sans-serif"],
+                        "headline-lg-mobile": ["Geist", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: #020617; /* Deepest slate */
+        }
+        .glass-card {
+            background-color: rgba(15, 23, 42, 0.7); /* #0F172A */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-field {
+            background-color: #1E293B;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .input-field:focus {
+            border-color: #c0c1ff; /* primary */
+            box-shadow: 0 0 0 2px rgba(192, 193, 255, 0.2);
+            outline: none;
+        }
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #c0c1ff;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #8083ff; /* primary-container */
+        }
+        .toggle-checkbox:checked + .toggle-label:after {
+            transform: translateX(100%);
+            border-color: white;
+        }
+    </style>
+</head>
+<body class="text-on-background antialiased flex bg-background">
+<!-- NavigationDrawer (Shared Component) -->
+<nav class="hidden lg:flex flex-col fixed left-0 top-0 h-screen w-64 border-r border-outline-variant bg-surface-container dark:bg-surface-container transition-all duration-200 ease-in-out z-40">
+<div class="p-gutter">
+<h1 class="font-headline-lg text-headline-lg text-primary">TL Engine</h1>
+</div>
+<div class="flex-1 overflow-y-auto py-margin-sm space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="grid_view">grid_view</span>
+                All Tools
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 bg-secondary-container text-on-secondary-container rounded-lg font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="transform" style="font-variation-settings: 'FILL' 1;">transform</span>
+                Converters
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                Generators
+            </a>
+</div>
+<div class="p-4 border-t border-outline-variant/30">
+<a class="flex items-center gap-3 px-4 py-3 mx-2 text-on-surface-variant hover:bg-surface-variant/50 rounded-lg font-label-sm text-label-sm transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 w-full z-50 lg:w-[calc(100%-16rem)] border-b border-white/10 shadow-sm bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="build">build</span>
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</h2>
+</div>
+<div class="flex items-center">
+<button class="p-2 text-on-surface-variant hover:text-primary dark:hover:text-primary-fixed transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 px-gutter pt-[calc(64px+40px)] pb-margin-lg max-w-container-max mx-auto w-full">
+<div class="mb-margin-md">
+<div class="flex items-center gap-2 mb-2">
+<span class="inline-flex items-center justify-center px-2 py-1 rounded bg-secondary/10 text-secondary font-label-sm text-label-sm">CONVERTER</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface mb-2">Base64 Encoder/Decoder</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Convert text or binary data back and forth using standard Base64 encoding. Optimized for speed and large datasets.</p>
+</div>
+<!-- Tool UI Bento Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Input Area -->
+<div class="glass-card rounded-xl p-margin-sm flex flex-col h-[500px]">
+<div class="flex items-center justify-between mb-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant">INPUT</label>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="modeLabel">Encode</span>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-200 ease-in-out left-0 top-0" id="modeToggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-surface-variant cursor-pointer" for="modeToggle"></label>
+</div>
+</div>
+</div>
+<textarea class="input-field flex-1 w-full rounded-lg p-4 font-body-md text-body-md text-on-surface resize-none font-mono" id="inputArea" placeholder="Paste your text or data here..."></textarea>
+<div class="flex justify-end mt-4 gap-4">
+<button class="px-4 py-2 rounded border border-white/20 text-on-surface hover:bg-white/10 font-label-sm text-label-sm transition-colors flex items-center gap-2 active:scale-95">
+<span class="material-symbols-outlined text-[16px]" data-icon="delete">delete</span>
+                            Clear
+                        </button>
+</div>
+</div>
+<!-- Output Area -->
+<div class="glass-card rounded-xl p-margin-sm flex flex-col h-[500px]">
+<div class="flex items-center justify-between mb-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant">OUTPUT</label>
+<span class="inline-flex items-center justify-center px-2 py-1 rounded bg-surface-variant text-on-surface-variant font-label-sm text-label-sm" id="outputFormatLabel">Base64</span>
+</div>
+<textarea class="input-field flex-1 w-full rounded-lg p-4 font-body-md text-body-md text-on-surface resize-none font-mono" id="outputArea" placeholder="Result will appear here..." readonly=""></textarea>
+<div class="flex justify-end mt-4">
+<button class="px-6 py-2 rounded bg-inverse-primary text-white font-label-sm text-label-sm transition-colors hover:bg-primary-container flex items-center gap-2 active:scale-95 shadow-[0_0_15px_rgba(73,75,214,0.3)]">
+<span class="material-symbols-outlined text-[16px]" data-icon="content_copy">content_copy</span>
+                            Copy Result
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 mt-auto bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto">
+<div class="font-label-sm font-bold text-on-surface mb-4 md:mb-0">
+                    © 2026 TL - Tools Library. Professional Utility Suite.
+                </div>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors opacity-80 hover:opacity-100" href="#">Terms</a>
+</div>
+</div>
+</footer>
+</main>
+<script>
+        // Simple Interaction Logic
+        const toggle = document.getElementById('modeToggle');
+        const modeLabel = document.getElementById('modeLabel');
+        const outputFormatLabel = document.getElementById('outputFormatLabel');
+        const inputArea = document.getElementById('inputArea');
+        const outputArea = document.getElementById('outputArea');
+
+        toggle.addEventListener('change', (e) => {
+            if(e.target.checked) {
+                modeLabel.textContent = 'Decode';
+                outputFormatLabel.textContent = 'Plain Text';
+                inputArea.placeholder = 'Paste your Base64 string here...';
+            } else {
+                modeLabel.textContent = 'Encode';
+                outputFormatLabel.textContent = 'Base64';
+                inputArea.placeholder = 'Paste your text or data here...';
+            }
+            // Clear on mode switch for demo
+            inputArea.value = '';
+            outputArea.value = '';
+        });
+    </script>
+</body></html>
