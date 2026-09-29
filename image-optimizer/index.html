@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Image Optimizer - Tools Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="../assets/theme-config.js"></script>
+<link rel="stylesheet" href="../assets/theme.css"/>
+<style>
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .drag-active {
+        border-color: #8083ff !important;
+        background: rgba(128, 131, 255, 0.1) !important;
+    }
+    input[type=range] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: transparent;
+    }
+    input[type=range]:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #8083ff;
+        cursor: pointer;
+        margin-top: -6px;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 4px;
+        cursor: pointer;
+        background: #464554;
+        border-radius: 2px;
+    }
+    .before-after-slider {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: white;
+        left: 50%;
+        cursor: ew-resize;
+        z-index: 10;
+    }
+    .before-after-handle {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 24px;
+        height: 24px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    .before-after-handle::after, .before-after-handle::before {
+        content: '';
+        width: 0;
+        height: 0;
+        border-top: 4px solid transparent;
+        border-bottom: 4px solid transparent;
+    }
+    .before-after-handle::before {
+        border-right: 4px solid #0b1326;
+        margin-right: 2px;
+    }
+    .before-after-handle::after {
+        border-left: 4px solid #0b1326;
+        margin-left: 2px;
+    }
+</style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-b border-white/10 shadow-sm transition-transform duration-150">
+<div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+<a href="../" class="flex items-center gap-2 text-primary dark:text-primary-fixed">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface dark:text-on-surface">Tools Library</span>
+</a>
+<div class="flex items-center gap-4">
+<a href="../tools-hub/" class="flex items-center gap-2 px-3 py-2 bg-surface-container-high text-on-surface-variant rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">
+<span class="material-symbols-outlined text-[18px]" data-icon="grid_view">grid_view</span>
+<span>All Tools</span>
+</a>
+<button id="searchBtn" class="text-primary dark:text-primary-fixed hover:text-primary dark:hover:text-primary-fixed transition-colors">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full flex flex-col min-h-[calc(100vh-4rem)] pt-16">
+<div class="px-4 md:px-gutter max-w-[1600px] mx-auto w-full py-margin-md flex-1 flex flex-col">
+<div class="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+<div>
+<h2 class="font-display-lg text-display-lg text-on-surface mb-2">Image Optimizer</h2>
+<p class="text-on-surface-variant text-body-md max-w-2xl">Compress and convert images with high-fidelity algorithms. Reduce file sizes without visible quality loss for web and mobile performance.</p>
+</div>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-tertiary-fixed border border-outline-variant">PNG</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-tertiary-fixed border border-outline-variant">JPG</span>
+<span class="px-3 py-1 bg-surface-container-high rounded-full font-label-sm text-label-sm text-secondary-fixed border border-outline-variant">WEBP</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Left Column: Controls & Upload -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Upload Zone -->
+<div class="glass-panel rounded-xl p-8 border-dashed border-2 border-outline hover:border-primary-container transition-all duration-300 flex flex-col items-center justify-center text-center h-64 relative group cursor-pointer" id="drop-zone">
+<input accept="image/png, image/jpeg, image/webp" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" id="file-input" multiple="" type="file"/>
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4 group-hover:bg-primary-container group-hover:text-on-primary-container transition-colors shadow-lg">
+<span class="material-symbols-outlined text-3xl" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb-1">Drag &amp; Drop Images</p>
+<p class="text-body-md text-on-surface-variant font-label-sm text-label-sm">or click to browse files</p>
+</div>
+<!-- Settings Panel -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6">
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface border-b border-outline-variant pb-2">Optimization Settings</h3>
+<div id="quality-control">
+<div class="flex justify-between items-center mb-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Quality Level</label>
+<span class="font-label-sm text-label-sm text-primary" id="quality-value">85%</span>
+</div>
+<input class="w-full" id="quality-slider" max="100" min="1" type="range" value="85"/>
+<div class="flex justify-between mt-1">
+<span class="text-[10px] text-outline">Smaller Size</span>
+<span class="text-[10px] text-outline">Higher Quality</span>
+</div>
+</div>
+<div>
+<label class="font-label-sm text-label-sm text-on-surface-variant mb-2 block">Output Format</label>
+<div class="grid grid-cols-3 gap-2">
+<button id="format-webp-btn" class="bg-primary text-on-primary py-2 rounded-lg font-label-sm text-label-sm border border-transparent transition-all">WebP</button>
+<button id="format-jpeg-btn" class="bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">JPEG</button>
+<button id="format-png-btn" class="bg-surface-container-high text-on-surface-variant py-2 rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-all border border-outline-variant">PNG</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Max Width (px)</label>
+</div>
+<div class="relative">
+<input id="max-width-input" class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 px-3 text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" placeholder="Original" type="number" min="1"/>
+</div>
+</div>
+<button id="optimize-all-btn" class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-headline-lg-mobile text-[16px] font-semibold mt-4 hover:bg-primary-fixed hover:shadow-[0_0_15px_rgba(128,131,255,0.4)] transition-all duration-300">
+                        Optimize All
+                    </button>
+</div>
+</div>
+<!-- Right Column: Preview & Results -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- Preview Canvas -->
+<div class="glass-panel rounded-xl overflow-hidden relative flex-1 min-h-[400px] border border-outline-variant">
+<div class="absolute inset-0 bg-surface-container-lowest flex items-center justify-center" style="background-image: radial-gradient(#464554 1px, transparent 1px); background-size: 20px 20px;">
+<!-- Empty state -->
+<div id="preview-empty" class="flex flex-col items-center justify-center text-center gap-3 px-6">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-3xl" data-icon="image">image</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">No image loaded yet</p>
+<p class="text-xs text-outline max-w-xs">Upload an image on the left to see a live before / after comparison here.</p>
+</div>
+<!-- Before/After Container -->
+<div class="relative w-full h-full max-w-4xl mx-auto flex items-center justify-center p-4 overflow-hidden hidden" id="compare-container">
+<div class="relative w-full h-full max-h-[600px] aspect-video rounded shadow-2xl overflow-hidden bg-black select-none">
+<!-- After Image (Base / optimized) -->
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" id="after-image"></div>
+<!-- Before Image (Clipped / original) -->
+<div class="absolute inset-0 w-full h-full bg-cover bg-center" id="before-image" style="clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);"></div>
+<!-- Slider -->
+<div class="before-after-slider" id="slider-line">
+<div class="before-after-handle"></div>
+</div>
+<!-- Labels -->
+<div class="absolute top-4 left-4 bg-surface-dim/80 backdrop-blur px-3 py-1 rounded font-label-sm text-label-sm text-on-surface border border-white/20" id="label-original">Original</div>
+<div class="absolute top-4 right-4 bg-primary-container/80 backdrop-blur px-3 py-1 rounded font-label-sm text-label-sm text-on-primary-container border border-white/20" id="label-optimized">Optimized</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Results List -->
+<div class="glass-panel rounded-xl p-4 border border-outline-variant">
+<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-4 px-2 uppercase tracking-wider" id="queue-count">Queue (0)</h4>
+<div class="flex flex-col gap-2" id="queue-list">
+<p class="text-on-surface-variant text-xs px-2 py-4 text-center">No images yet. Upload one to get started.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-32 bg-surface-container-lowest dark:bg-surface-container-lowest border-t border-outline-variant flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto opacity-80 hover:opacity-100 transition-opacity">
+<div class="mb-4 md:mb-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant dark:text-on-surface-variant">© 2026 TL - Tools Library. Professional Utility Suite.</span>
+</div>
+<nav class="flex items-center gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Documentation</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Open Source</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Privacy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors" href="#">Terms</a>
+</nav>
+</footer>
+</main>
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+    'use strict';
+
+    // Chrome elements
+    var toast = document.getElementById('toast');
+
+    // Tool elements
+    var fileInput = document.getElementById('file-input');
+    var dropZone = document.getElementById('drop-zone');
+    var qualityControl = document.getElementById('quality-control');
+    var qualitySlider = document.getElementById('quality-slider');
+    var qualityValue = document.getElementById('quality-value');
+    var formatBtns = {
+        webp: document.getElementById('format-webp-btn'),
+        jpeg: document.getElementById('format-jpeg-btn'),
+        png: document.getElementById('format-png-btn')
+    };
+    var maxWidthInput = document.getElementById('max-width-input');
+    var optimizeAllBtn = document.getElementById('optimize-all-btn');
+    var previewEmpty = document.getElementById('preview-empty');
+    var compareContainer = document.getElementById('compare-container');
+    var beforeImage = document.getElementById('before-image');
+    var afterImage = document.getElementById('after-image');
+    var sliderLine = document.getElementById('slider-line');
+    var labelOriginal = document.getElementById('label-original');
+    var labelOptimized = document.getElementById('label-optimized');
+    var queueList = document.getElementById('queue-list');
+    var queueCount = document.getElementById('queue-count');
+
+    var items = [];
+    var activeId = null;
+    var currentFormat = 'webp';
+    var nextId = 1;
+    var debTimer = null;
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 1800);
+    }
+
+    function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function formatBytes(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    function mimeFor(fmt) {
+        return fmt === 'webp' ? 'image/webp' : (fmt === 'jpeg' ? 'image/jpeg' : 'image/png');
+    }
+
+    function extFor(fmt) {
+        return fmt === 'webp' ? 'webp' : (fmt === 'jpeg' ? 'jpg' : 'png');
+    }
+
+    function setFormat(fmt) {
+        currentFormat = fmt;
+        Object.keys(formatBtns).forEach(function (k) {
+            var btn = formatBtns[k];
+            if (!btn) return;
+            if (k === fmt) {
+                btn.classList.add('bg-primary', 'text-on-primary');
+                btn.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+            } else {
+                btn.classList.remove('bg-primary', 'text-on-primary');
+                btn.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+            }
+        });
+        var isPng = fmt === 'png';
+        qualitySlider.disabled = isPng;
+        qualityControl.classList.toggle('opacity-50', isPng);
+        if (activeId !== null) processItem(activeId);
+    }
+
+    formatBtns.webp.addEventListener('click', function () { setFormat('webp'); });
+    formatBtns.jpeg.addEventListener('click', function () { setFormat('jpeg'); });
+    formatBtns.png.addEventListener('click', function () { setFormat('png'); });
+
+    qualitySlider.addEventListener('input', function (e) {
+        qualityValue.textContent = e.target.value + '%';
+        clearTimeout(debTimer);
+        debTimer = setTimeout(function () {
+            if (activeId !== null) processItem(activeId);
+        }, 200);
+    });
+
+    maxWidthInput.addEventListener('change', function () {
+        if (activeId !== null) processItem(activeId);
+    });
+
+    optimizeAllBtn.addEventListener('click', function () {
+        var processable = items.filter(function (i) { return i.img; });
+        if (processable.length === 0) {
+            showToast('Add an image first');
+            return;
+        }
+        processable.forEach(function (i) { processItem(i.id); });
+        showToast('Optimizing ' + processable.length + ' image' + (processable.length > 1 ? 's' : '') + '…');
+    });
+
+    function findItem(id) {
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].id === id) return items[i];
+        }
+        return null;
+    }
+
+    function handleFiles(fileList) {
+        Array.prototype.slice.call(fileList).forEach(function (file) { addFile(file); });
+    }
+
+    function addFile(file) {
+        var id = nextId++;
+        var item = {
+            id: id,
+            name: file.name,
+            originalSize: file.size,
+            originalURL: null,
+            img: null,
+            status: 'loading',
+            errorMsg: '',
+            format: currentFormat,
+            optimizedURL: null,
+            optimizedSize: null
+        };
+        items.push(item);
+        renderQueue();
+
+        if (!file.type || file.type.indexOf('image/') !== 0) {
+            item.status = 'error';
+            item.errorMsg = 'Unsupported file type';
+            renderQueue();
+            showToast('"' + file.name + '" is not a supported image file');
+            return;
+        }
+
+        var url = URL.createObjectURL(file);
+        item.originalURL = url;
+        var img = new Image();
+        img.onload = function () {
+            item.img = img;
+            item.status = 'ready';
+            renderQueue();
+            setActive(id);
+            processItem(id);
+        };
+        img.onerror = function () {
+            item.status = 'error';
+            item.errorMsg = 'Could not decode image';
+            renderQueue();
+            showToast('Failed to load "' + file.name + '"');
+        };
+        img.src = url;
+    }
+
+    function processItem(id) {
+        var item = findItem(id);
+        if (!item || !item.img) return;
+
+        var quality = parseInt(qualitySlider.value, 10) / 100;
+        var fmt = currentFormat;
+        var maxW = parseInt(maxWidthInput.value, 10);
+        if (!maxW || maxW <= 0) maxW = item.img.naturalWidth;
+
+        var scale = Math.min(1, maxW / item.img.naturalWidth);
+        var w = Math.max(1, Math.round(item.img.naturalWidth * scale));
+        var h = Math.max(1, Math.round(item.img.naturalHeight * scale));
+
+        var canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext('2d');
+        if (fmt === 'jpeg') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+        }
+        ctx.drawImage(item.img, 0, 0, w, h);
+
+        item.status = 'processing';
+        renderQueue();
+
+        canvas.toBlob(function (blob) {
+            if (!blob) {
+                item.status = 'error';
+                item.errorMsg = 'Encoding failed';
+                renderQueue();
+                showToast('Encoding failed for "' + item.name + '"');
+                return;
+            }
+            if (item.optimizedURL) URL.revokeObjectURL(item.optimizedURL);
+            item.optimizedURL = URL.createObjectURL(blob);
+            item.optimizedSize = blob.size;
+            item.format = fmt;
+            item.status = 'done';
+            renderQueue();
+            if (activeId === id) updatePreview(item);
+        }, mimeFor(fmt), fmt === 'png' ? undefined : quality);
+    }
+
+    function setActive(id) {
+        var item = findItem(id);
+        if (!item || item.status === 'error') return;
+        activeId = id;
+        updatePreview(item);
+        renderQueue();
+    }
+
+    function updatePreview(item) {
+        previewEmpty.classList.add('hidden');
+        compareContainer.classList.remove('hidden');
+        afterImage.style.backgroundImage = "url('" + (item.optimizedURL || item.originalURL) + "')";
+        beforeImage.style.backgroundImage = "url('" + item.originalURL + "')";
+        labelOriginal.textContent = 'Original (' + formatBytes(item.originalSize) + ')';
+        labelOptimized.textContent = item.optimizedSize != null
+            ? 'Optimized (' + formatBytes(item.optimizedSize) + ')'
+            : 'Optimizing…';
+        sliderLine.style.left = '50%';
+        beforeImage.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
+    }
+
+    function showEmptyPreview() {
+        previewEmpty.classList.remove('hidden');
+        compareContainer.classList.add('hidden');
+        afterImage.style.backgroundImage = '';
+        beforeImage.style.backgroundImage = '';
+    }
+
+    function renderQueue() {
+        queueCount.textContent = 'Queue (' + items.length + ')';
+        queueList.innerHTML = '';
+
+        if (items.length === 0) {
+            var empty = document.createElement('p');
+            empty.className = 'text-on-surface-variant text-xs px-2 py-4 text-center';
+            empty.textContent = 'No images yet. Upload one to get started.';
+            queueList.appendChild(empty);
+            return;
+        }
+
+        items.forEach(function (item) {
+            var row = document.createElement('div');
+            row.className = 'flex items-center justify-between p-3 bg-surface-container rounded-lg border ' +
+                (item.id === activeId ? 'border-primary' : 'border-surface-container-high') +
+                ' hover:border-outline-variant transition-colors group cursor-pointer';
+            row.addEventListener('click', function (e) {
+                if (e.target.closest('button')) return;
+                setActive(item.id);
+            });
+
+            var sizeText;
+            if (item.status === 'error') {
+                sizeText = '<span class="text-error">' + escapeHtml(item.errorMsg || 'Failed') + '</span>';
+            } else if (item.status === 'loading') {
+                sizeText = 'Loading…';
+            } else if (item.status === 'processing') {
+                sizeText = formatBytes(item.originalSize) + ' → processing…';
+            } else if (item.optimizedSize != null) {
+                var pct = Math.round((1 - item.optimizedSize / item.originalSize) * 100);
+                var sign = pct >= 0 ? '-' : '+';
+                sizeText = formatBytes(item.originalSize) + ' → <span class="text-secondary">' +
+                    formatBytes(item.optimizedSize) + '</span> (' + sign + Math.abs(pct) + '%)';
+            } else {
+                sizeText = formatBytes(item.originalSize);
+            }
+
+            var thumbHtml = item.status === 'error'
+                ? '<span class="material-symbols-outlined text-error text-[18px]">broken_image</span>'
+                : '<img alt="thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" src="' + item.originalURL + '"/>';
+
+            row.innerHTML =
+                '<div class="flex items-center gap-3 min-w-0">' +
+                    '<div class="w-10 h-10 rounded bg-surface-dim flex items-center justify-center overflow-hidden shrink-0">' + thumbHtml + '</div>' +
+                    '<div class="min-w-0">' +
+                        '<p class="font-label-sm text-label-sm text-on-surface truncate max-w-[160px]">' + escapeHtml(item.name) + '</p>' +
+                        '<p class="text-[10px] text-outline mt-1 font-label-sm">' + sizeText + '</p>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="flex items-center gap-2 shrink-0">' +
+                    '<button class="dl-btn p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-variant" title="Download"' + (item.optimizedURL ? '' : ' disabled') + '>' +
+                        '<span class="material-symbols-outlined text-[20px]" data-icon="download">download</span>' +
+                    '</button>' +
+                    '<button class="del-btn p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-surface-variant" title="Delete">' +
+                        '<span class="material-symbols-outlined text-[20px]" data-icon="delete">delete</span>' +
+                    '</button>' +
+                '</div>';
+
+            row.querySelector('.dl-btn').addEventListener('click', function () { downloadItem(item.id); });
+            row.querySelector('.del-btn').addEventListener('click', function () { deleteItem(item.id); });
+            queueList.appendChild(row);
+        });
+    }
+
+    function downloadItem(id) {
+        var item = findItem(id);
+        if (!item || !item.optimizedURL) {
+            showToast('Not optimized yet');
+            return;
+        }
+        var base = item.name.replace(/\.[^./\\]+$/, '');
+        var filename = base + '-optimized.' + extFor(item.format);
+        var a = document.createElement('a');
+        a.href = item.optimizedURL;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Downloading ' + filename);
+    }
+
+    function deleteItem(id) {
+        var idx = -1;
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].id === id) { idx = i; break; }
+        }
+        if (idx === -1) return;
+        var item = items[idx];
+        if (item.originalURL) URL.revokeObjectURL(item.originalURL);
+        if (item.optimizedURL) URL.revokeObjectURL(item.optimizedURL);
+        items.splice(idx, 1);
+
+        if (activeId === id) {
+            if (items.length > 0) {
+                var next = items[0];
+                if (next.img) {
+                    setActive(next.id);
+                } else {
+                    activeId = null;
+                    showEmptyPreview();
+                }
+            } else {
+                activeId = null;
+                showEmptyPreview();
+            }
+        }
+        renderQueue();
+    }
+
+    // Drag & drop
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+    ['dragenter', 'dragover'].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function () { dropZone.classList.add('drag-active'); }, false);
+    });
+    ['dragleave', 'drop'].forEach(function (eventName) {
+        dropZone.addEventListener(eventName, function () { dropZone.classList.remove('drag-active'); }, false);
+    });
+    dropZone.addEventListener('drop', function (e) {
+        var dt = e.dataTransfer;
+        if (dt && dt.files && dt.files.length) handleFiles(dt.files);
+    });
+    fileInput.addEventListener('change', function (e) {
+        if (e.target.files && e.target.files.length) handleFiles(e.target.files);
+        fileInput.value = '';
+    });
+
+    // Before/After Image Comparison Slider
+    var isSliding = false;
+    function updateSlider(e) {
+        if (!isSliding) return;
+        var rect = compareContainer.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        x = Math.max(0, Math.min(x, rect.width));
+        var percentage = (x / rect.width) * 100;
+        sliderLine.style.left = percentage + '%';
+        beforeImage.style.clipPath = 'polygon(0 0, ' + percentage + '% 0, ' + percentage + '% 100%, 0 100%)';
+    }
+    compareContainer.addEventListener('mousedown', function (e) {
+        isSliding = true;
+        updateSlider(e);
+    });
+    window.addEventListener('mouseup', function () { isSliding = false; });
+    window.addEventListener('mousemove', updateSlider);
+    compareContainer.addEventListener('touchstart', function (e) {
+        isSliding = true;
+        updateSlider(e.touches[0]);
+    });
+    window.addEventListener('touchend', function () { isSliding = false; });
+    window.addEventListener('touchmove', function (e) {
+        if (isSliding) e.preventDefault();
+        updateSlider(e.touches[0]);
+    }, { passive: false });
+
+    // Init
+    setFormat('webp');
+    renderQueue();
+})();
+</script>
+</body></html>
