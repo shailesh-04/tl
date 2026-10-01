@@ -127,6 +127,11 @@
 <span><span class="font-label-sm text-label-sm text-on-surface block">Fast mode</span><span class="text-[11px] text-outline">When the codecs already fit the new format and size is unchanged, just rewrap the file (seconds instead of minutes, no quality loss).</span></span>
 </label>
 </div>
+<div id="parallel-control">
+<label class="font-label-sm text-label-sm text-on-surface-variant mb-2 block" for="parallel-select">Parallel conversions</label>
+<select id="parallel-select" class="w-full bg-surface-container border border-outline-variant rounded-lg py-2 px-3 text-on-surface font-label-sm text-label-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"></select>
+<p class="text-[11px] text-outline mt-2">Converts several videos at once, one FFmpeg engine per CPU core. Use fewer if the tab runs out of memory on large files.</p>
+</div>
 <div class="flex flex-col gap-3 mt-2">
 <button id="convert-all-btn" type="button" class="w-full bg-primary-container text-on-primary-container py-3 rounded-lg font-headline-lg-mobile text-[16px] font-semibold hover:bg-primary-fixed hover:shadow-[0_0_15px_rgba(128,131,255,0.4)] transition-all duration-300 flex items-center justify-center gap-2">
 <span class="material-symbols-outlined text-[20px]">sync</span><span>Convert All</span>
@@ -271,13 +276,25 @@ var nextId = 1;
 var activeId = null;
 var previewView = 'original';
 
-var ffmpeg = null;
+var parallelSelect = $('parallel-select');
+
 var coreBlobURLs = null;
-var engineLoading = null;
-var logSink = null;
+var coreLoading = null;
+var idleEngines = [];   // loaded engines waiting for work
+var busyEngines = [];   // engines currently converting
 var running = false;
 var cancelRequested = false;
-var currentItem = null;
+
+// Each FFmpeg engine is single-threaded, so run one per core (capped to limit memory).
+var CORES = navigator.hardwareConcurrency || 4;
+var MAX_PARALLEL = Math.max(1, Math.min(8, CORES));
+var AUTO_PARALLEL = Math.max(1, Math.min(4, CORES - 1));
+(function () {
+    var html = '<option value="0">Auto (' + AUTO_PARALLEL + ' at once)</option>';
+    for (var n = 1; n <= MAX_PARALLEL; n++) html += '<option value="' + n + '">' + n + (n === 1 ? ' (one by one)' : ' at once') + '</option>';
+    parallelSelect.innerHTML = html;
+})();
+function parallelCount() { return parseInt(parallelSelect.value, 10) || AUTO_PARALLEL; }
 
 // ---------- helpers ----------
 function showToast(msg) {
@@ -394,38 +411,66 @@ async function downloadCore() {
     throw lastErr || new Error('Could not download FFmpeg');
 }
 
-function ensureEngine() {
-    if (ffmpeg && ffmpeg.loaded) return Promise.resolve(ffmpeg);
-    if (engineLoading) return engineLoading;
-    engineLoading = (async function () {
+function ensureCore() {
+    if (coreBlobURLs) return Promise.resolve(coreBlobURLs);
+    if (!coreLoading) {
+        setEngine('Downloading…', 0);
+        coreLoading = downloadCore().then(function (urls) {
+            coreBlobURLs = urls;
+            return urls;
+        }).finally(function () { coreLoading = null; });
+    }
+    return coreLoading;
+}
+
+function engineStatusText() {
+    var n = idleEngines.length + busyEngines.length;
+    if (!n) return 'Not loaded';
+    return busyEngines.length ? busyEngines.length + ' of ' + n + ' engines busy' : 'Ready · ' + n + ' engine' + (n === 1 ? '' : 's');
+}
+
+// Take an idle engine or start a new one from the cached core.
+async function acquireEngine() {
+    var eng = idleEngines.pop();
+    if (!eng) {
         try {
-            if (!coreBlobURLs) {
-                setEngine('Downloading…', 0);
-                coreBlobURLs = await downloadCore();
-            }
-            setEngine('Starting…', -1);
-            var inst = new FFmpeg();
-            inst.on('log', function (e) { if (logSink) logSink(e.message); });
-            await inst.load(coreBlobURLs);
-            ffmpeg = inst;
-            setEngine('Ready', 100);
-            return inst;
+            await ensureCore();
+            if (engineStatus.textContent === 'Not loaded' || /^Downloading/.test(engineStatus.textContent)) setEngine('Starting…', -1);
+            eng = { ff: new FFmpeg(), sink: null, mounted: false };
+            eng.ff.on('log', function (e) { if (eng.sink) eng.sink(e.message); });
+            await eng.ff.load(coreBlobURLs);
         } catch (err) {
             setEngine('Failed to load', 0);
             throw err;
-        } finally {
-            engineLoading = null;
         }
-    })();
-    return engineLoading;
+    }
+    busyEngines.push(eng);
+    setEngine(engineStatusText(), 100);
+    return eng;
+}
+
+function releaseEngine(eng) {
+    var i = busyEngines.indexOf(eng);
+    if (i === -1) return;
+    busyEngines.splice(i, 1);
+    idleEngines.push(eng);
+    setEngine(engineStatusText(), 100);
 }
 
 // A WASM crash (e.g. "memory access out of bounds") leaves the instance unusable,
-// so throw it away; ensureEngine() starts a fresh one from the cached core.
-function resetEngine() {
-    if (ffmpeg) { try { ffmpeg.terminate(); } catch (e) {} }
-    ffmpeg = null;
-    inputMounted = false;
+// so throw it away; acquireEngine() starts a fresh one from the cached core.
+function killEngine(eng) {
+    try { eng.ff.terminate(); } catch (e) {}
+    var i = busyEngines.indexOf(eng);
+    if (i !== -1) busyEngines.splice(i, 1);
+    i = idleEngines.indexOf(eng);
+    if (i !== -1) idleEngines.splice(i, 1);
+}
+
+// Keep at most `n` idle engines so memory is freed when fewer are wanted.
+function trimIdle(n) {
+    while (idleEngines.length > n) killEngine(idleEngines[idleEngines.length - 1]);
+    setEngine(engineStatusText(), idleEngines.length ? 100 : 0);
 }
 
 function userError(msg) {
@@ -435,18 +480,18 @@ function userError(msg) {
 }
 
 // Run an ffmpeg command, capturing its log lines.
-async function run(args, onLine) {
+async function run(eng, args, onLine) {
     var lines = [];
-    logSink = function (msg) {
+    eng.sink = function (msg) {
         lines.push(msg);
         if (lines.length > 400) lines.shift();
         if (onLine) onLine(msg);
     };
     try {
-        var code = await ffmpeg.exec(args);
+        var code = await eng.ff.exec(args);
         return { code: code, lines: lines };
     } finally {
-        logSink = null;
+        eng.sink = null;
     }
 }
 
@@ -550,34 +595,33 @@ function lastError(lines) {
 }
 
 // ---------- conversion ----------
-var inputMounted = false;
-
-async function mountInput(file) {
+// Every engine has its own filesystem, so the same paths are safe across engines.
+async function mountInput(eng, file) {
     var dir = '/input';
-    try { await ffmpeg.createDir(dir); } catch (e) { /* already exists */ }
+    try { await eng.ff.createDir(dir); } catch (e) { /* already exists */ }
     try {
-        await ffmpeg.mount('WORKERFS', { files: [file] }, dir);
-        inputMounted = true;
+        await eng.ff.mount('WORKERFS', { files: [file] }, dir);
+        eng.mounted = true;
         return dir + '/' + file.name;
     } catch (e) {
         // Fallback: copy bytes into the in-memory filesystem.
         var path = '/in_' + Date.now() + '.' + (file.name.split('.').pop() || 'bin');
-        await ffmpeg.writeFile(path, new Uint8Array(await file.arrayBuffer()));
+        await eng.ff.writeFile(path, new Uint8Array(await file.arrayBuffer()));
         return path;
     }
 }
 
-async function releaseInput(path) {
-    if (inputMounted) {
-        try { await ffmpeg.unmount('/input'); } catch (e) {}
-        inputMounted = false;
+async function releaseInput(eng, path) {
+    if (eng.mounted) {
+        try { await eng.ff.unmount('/input'); } catch (e) {}
+        eng.mounted = false;
     } else if (path) {
-        try { await ffmpeg.deleteFile(path); } catch (e) {}
+        try { await eng.ff.deleteFile(path); } catch (e) {}
     }
 }
 
-async function convertItem(item) {
-    var job = {
+function currentJob() {
+    return {
         format: settings.format,
         quality: settings.quality,
         height: parseInt(resolutionSelect.value, 10) || 0,
@@ -585,11 +629,14 @@ async function convertItem(item) {
         fast: fastMode.checked,
         key: settingsKey()
     };
+}
+
+async function convertItem(item, job) {
     var fmt = job.format;
     var outPath = '/output.' + FORMATS[fmt].ext;
     var inPath = null;
+    var eng = null;
 
-    currentItem = item;
     item.status = 'working';
     item.stage = 'Preparing…';
     item.progress = -1;
@@ -597,12 +644,13 @@ async function convertItem(item) {
     renderQueue();
 
     try {
-        await ensureEngine();
-        inPath = await mountInput(item.file);
+        eng = await acquireEngine();
+        if (cancelRequested) throw new Error('Cancelled');
+        inPath = await mountInput(eng, item.file);
 
         item.stage = 'Reading file…';
         updateRow(item);
-        var probe = await run(['-hide_banner', '-i', inPath]);
+        var probe = await run(eng, ['-hide_banner', '-i', inPath]);
         var info = parseProbe(probe.lines);
         item.info = info;
         if (!info.vcodec && !info.acodec) throw userError('Not a readable video file');
@@ -611,27 +659,27 @@ async function convertItem(item) {
         var result = null;
         if (copy) {
             try {
-                result = await encode(item, buildArgs(fmt, inPath, outPath, info, job, true), info, true);
+                result = await encode(eng, item, buildArgs(fmt, inPath, outPath, info, job, true), info, true);
             } catch (err) {
                 if (cancelRequested) throw err;
-                resetEngine();
-                await ensureEngine();
-                inPath = await mountInput(item.file);
+                killEngine(eng);
+                eng = await acquireEngine();
+                inPath = await mountInput(eng, item.file);
             }
             if (!result || result.code !== 0) {
                 // Stream copy can fail on unusual files; retry with a full re-encode.
-                if (result) { try { await ffmpeg.deleteFile(outPath); } catch (e) {} }
+                if (result) { try { await eng.ff.deleteFile(outPath); } catch (e) {} }
                 copy = false;
                 result = null;
             }
         }
-        if (!result) result = await encode(item, buildArgs(fmt, inPath, outPath, info, job, false), info, false);
+        if (!result) result = await encode(eng, item, buildArgs(fmt, inPath, outPath, info, job, false), info, false);
         if (cancelRequested) throw new Error('Cancelled');
         if (result.code !== 0) throw userError(lastError(result.lines));
 
         var data = null;
-        try { data = await ffmpeg.readFile(outPath); } catch (e) {}
-        try { await ffmpeg.deleteFile(outPath); } catch (e) {}
+        try { data = await eng.ff.readFile(outPath); } catch (e) {}
+        try { await eng.ff.deleteFile(outPath); } catch (e) {}
         if (!data || !data.length) throw userError('Conversion produced an empty file (the video may have no frames)');
 
         if (item.outURL) URL.revokeObjectURL(item.outURL);
@@ -652,24 +700,30 @@ async function convertItem(item) {
             if (err && err.expected) {
                 item.error = err.message;
             } else {
-                // Unexpected failure means the engine crashed; restart it for the next file.
+                // Unexpected failure means the engine crashed; drop it so the next file gets a fresh one.
                 item.error = 'FFmpeg crashed on this file' + (err && err.message ? ' (' + err.message + ')' : '');
-                resetEngine();
+                if (eng) { killEngine(eng); eng = null; }
             }
             console.error(err);
         }
     } finally {
-        if (ffmpeg && ffmpeg.loaded && !cancelRequested) await releaseInput(inPath);
-        currentItem = null;
+        if (eng && busyEngines.indexOf(eng) !== -1) {
+            if (cancelRequested) {
+                killEngine(eng); // started loading after Stop was pressed
+            } else {
+                await releaseInput(eng, inPath);
+                releaseEngine(eng);
+            }
+        }
         renderQueue();
     }
 }
 
-function encode(item, args, info, copy) {
+function encode(eng, item, args, info, copy) {
     item.stage = copy ? 'Rewrapping (fast)…' : 'Converting…';
     item.progress = info.duration ? 0 : -1;
     updateRow(item);
-    return run(args, function (line) {
+    return run(eng, args, function (line) {
         var t = line.match(/time=\s*(-?\d+:\d+:\d+(?:\.\d+)?)/);
         if (t && info.duration) {
             var pct = Math.max(0, Math.min(99, parseClock(t[1]) / info.duration * 100));
@@ -687,15 +741,28 @@ async function convertQueue(list) {
     running = true;
     cancelRequested = false;
     setRunningUI(true);
-    var ok = 0, failed = 0;
-    for (var i = 0; i < list.length; i++) {
-        if (cancelRequested) break;
-        if (items.indexOf(list[i]) === -1) continue; // removed while waiting
-        await convertItem(list[i]);
-        if (list[i].status === 'done') ok++;
-        else if (list[i].status === 'error') failed++;
+    var job = currentJob();
+    var ok = 0, failed = 0, next = 0;
+    var workers = Math.min(parallelCount(), list.length);
+
+    // Download the core once up front so parallel workers don't race on it.
+    try { await ensureCore(); } catch (e) { /* each item reports the failure */ }
+
+    async function worker() {
+        while (!cancelRequested && next < list.length) {
+            var item = list[next++];
+            if (items.indexOf(item) === -1) continue; // removed while waiting
+            await convertItem(item, job);
+            if (item.status === 'done') ok++;
+            else if (item.status === 'error') failed++;
+        }
     }
+    var pool = [];
+    for (var w = 0; w < workers; w++) pool.push(worker());
+    await Promise.all(pool);
+
     running = false;
+    if (!cancelRequested) trimIdle(parallelCount());
     setRunningUI(false);
     if (cancelRequested) showToast('Stopped');
     else if (failed) showToast(ok + ' converted, ' + failed + ' failed');
@@ -715,7 +782,7 @@ function setRunningUI(on) {
     cancelBtn.classList.toggle('hidden', !on);
     formatGroup.classList.toggle('pointer-events-none', on);
     qualityGroup.classList.toggle('pointer-events-none', on);
-    [resolutionSelect, removeAudio, fastMode].forEach(function (el) { el.disabled = on; });
+    [resolutionSelect, removeAudio, fastMode, parallelSelect].forEach(function (el) { el.disabled = on; });
     if (!on) onFormatChange();
     renderQueue();
 }
@@ -729,7 +796,7 @@ cancelBtn.addEventListener('click', function () {
     if (!running) return;
     cancelRequested = true;
     // Terminating the worker is the only way to interrupt a running ffmpeg job.
-    resetEngine();
+    busyEngines.slice().concat(idleEngines).forEach(killEngine);
     setEngine('Stopped', 0);
 });
 
@@ -772,7 +839,7 @@ function handleFiles(fileList) {
 function deleteItem(id) {
     var item = findItem(id);
     if (!item) return;
-    if (item === currentItem) { showToast('Stop the conversion before removing this video'); return; }
+    if (item.status === 'working') { showToast('Stop the conversion before removing this video'); return; }
     URL.revokeObjectURL(item.srcURL);
     if (item.outURL) URL.revokeObjectURL(item.outURL);
     items.splice(items.indexOf(item), 1);
@@ -893,7 +960,7 @@ function rowHTML(item) {
         '<div class="flex items-center gap-1 shrink-0">' +
             '<button type="button" data-act="convert" class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-variant" title="Convert this video"' + (running ? ' disabled' : '') + '><span class="material-symbols-outlined text-[20px]">' + (item.status === 'done' ? 'replay' : 'play_arrow') + '</span></button>' +
             '<button type="button" data-act="download" class="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-surface-variant" title="Download converted file"' + (item.outURL ? '' : ' disabled') + '><span class="material-symbols-outlined text-[20px]">download</span></button>' +
-            '<button type="button" data-act="delete" class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-surface-variant" title="Remove"' + (item === currentItem ? ' disabled' : '') + '><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
+            '<button type="button" data-act="delete" class="p-2 text-on-surface-variant hover:text-error transition-colors rounded-full hover:bg-surface-variant" title="Remove"' + (item.status === 'working' ? ' disabled' : '') + '><span class="material-symbols-outlined text-[20px]">delete</span></button>' +
         '</div>';
 }
 
