@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JSON Converter &amp; Data Filter - Tools Library</title>
+  <meta name="description"
+    content="Convert JSON to CSV, TSV, XML, and formatted JSON. Select nested fields, filter records, preview, and export privately in your browser." />
+  <meta name="theme-color" content="#0b1326" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+
+  <link rel="stylesheet" href="../assets/theme.css" />
+  <script src="../assets/theme-config.js"></script>
+  <style>
+    .tool-panel {
+      background: rgba(19, 27, 46, .92);
+      border: 1px solid rgba(70, 69, 84, .75);
+    }
+
+    .tool-input {
+      background: #171f33;
+      border: 1px solid #464554;
+      color: #dae2fd;
+    }
+
+    .tool-input:focus {
+      border-color: #c0c1ff;
+      outline: 2px solid rgba(192, 193, 255, .18);
+      outline-offset: 1px;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .drop-active {
+      border-color: #c0c1ff !important;
+      background: rgba(192, 193, 255, .08);
+    }
+
+    .field-row:hover {
+      background: rgba(45, 52, 73, .55);
+    }
+
+    .filter-row+.filter-row {
+      border-top: 1px solid #464554;
+    }
+
+    #jsonInput {
+      tab-size: 2;
+    }
+
+    @media (max-width: 640px) {
+      #jsonInput {
+        min-height: 250px;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col">
+  <a href="#main"
+    class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-primary focus:text-on-primary focus:px-4 focus:py-2 focus:rounded">Skip
+    to content</a>
+  <!-- Top Nav -->
+  <header class="fixed top-0 w-full z-50 bg-surface-dim/80 backdrop-blur-xl border-b border-white/10">
+    <div class="flex items-center justify-between px-gutter max-w-container-max mx-auto h-16">
+      <a href="#main" class="flex items-center gap-2 text-primary-fixed">
+        <span class="material-symbols-outlined" aria-hidden="true">build</span>
+        <span class="font-headline-lg text-headline-lg-mobile font-bold tracking-tight text-on-surface">TL</span>
+        <span class="hidden sm:inline font-label-sm text-label-sm text-on-surface-variant">Tools Library</span>
+      </a>
+      <nav class="hidden md:flex items-center gap-8" aria-label="Primary">
+        <a href="#tools"
+          class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Tools</a>
+        <a href="#why"
+          class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Why
+          TL</a>
+        <a href="https://github.com/shailesh-04/tl" target="_blank" rel="noopener noreferrer"
+          class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">GitHub</a>
+        <a href="tools-hub/"
+          class="flex items-center gap-2 px-4 py-2 bg-inverse-primary text-white font-label-sm text-label-sm rounded-lg hover:bg-primary-container hover:text-on-primary-container transition-all shadow-lg shadow-inverse-primary/20">
+          <span class="material-symbols-outlined text-[18px]" aria-hidden="true">grid_view</span>
+          Browse All Tools
+        </a>
+      </nav>
+      <button id="mobileMenuBtn" class="md:hidden text-on-surface" aria-expanded="false" aria-controls="mobileNav"
+        aria-label="Toggle navigation menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+    </div>
+    <nav id="mobileNav" class="md:hidden border-t border-outline-variant/30 bg-surface-dim" aria-label="Mobile">
+      <div class="flex flex-col gap-1 px-gutter py-3">
+        <a href="#tools"
+          class="px-2 py-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary">Tools</a>
+        <a href="#why" class="px-2 py-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary">Why
+          TL</a>
+        <a href="https://github.com/shailesh-04/tl" target="_blank" rel="noopener noreferrer"
+          class="px-2 py-2 font-label-sm text-label-sm text-on-surface-variant hover:text-primary">GitHub</a>
+        <a href="tools-hub/" class="px-2 py-2 font-label-sm text-label-sm text-secondary">Browse All Tools →</a>
+      </div>
+    </nav>
+  </header>
+  <main id="main" class="w-full max-w-container-max mx-auto px-4 md:px-gutter pt-24 pb-12 flex-1">
+    <section class="mb-7">
+      <div class="flex items-center gap-3 mb-2"><span
+          class="px-2.5 py-1 bg-primary/10 text-primary rounded-full mono text-xs">DATA TOOL</span><span
+          class="text-xs text-on-surface-variant">Private · Runs locally in your browser</span></div>
+      <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-on-surface">JSON Converter &amp; Data Filter</h1>
+      <p class="text-on-surface-variant mt-3 max-w-3xl">Choose exactly which fields to keep, filter records, and export
+        clean CSV, TSV, XML, or JSON. Your data never leaves this device.</p>
+    </section>
+
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-5">
+      <section class="xl:col-span-5 flex flex-col gap-5" aria-label="Input and output settings">
+        <div class="tool-panel rounded-xl p-5">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h2 class="font-semibold text-lg">JSON input</h2>
+            <div class="flex gap-2">
+              <button id="sampleBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:border-primary hover:text-primary">Load
+                sample</button>
+              <button id="clearBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:border-error hover:text-error">Clear</button>
+            </div>
+          </div>
+          <div id="dropZone" class="border-2 border-dashed border-outline-variant rounded-lg p-3 transition-colors">
+            <textarea id="jsonInput" spellcheck="false" aria-label="JSON input"
+              class="tool-input mono w-full min-h-[330px] rounded-md p-3 text-xs leading-5 resize-y"
+              placeholder="Paste JSON here, or drop a .json file..."></textarea>
+            <div class="flex flex-wrap items-center justify-between gap-2 mt-3">
+              <div class="flex items-center gap-2">
+                <button id="uploadBtn" type="button"
+                  class="text-xs px-3 py-2 bg-surface-container-highest rounded-lg hover:text-primary">Choose .json
+                  file</button>
+                <input id="fileInput" type="file" accept=".json,application/json" class="hidden" />
+                <span id="fileInfo" class="text-xs text-on-surface-variant truncate max-w-[200px]" aria-live="polite">No
+                  file loaded</span>
+              </div>
+              <span id="inputSize" class="mono text-[11px] text-on-surface-variant">0 bytes</span>
+            </div>
+          </div>
+          <div id="parseError"
+            class="hidden mt-3 p-3 rounded-lg border border-error/50 bg-error-container/20 text-error text-sm"
+            role="alert"></div>
+          <div class="mt-3 flex items-center justify-between gap-3 text-xs">
+            <label for="recordSource" class="text-on-surface-variant">Record source</label>
+            <select id="recordSource" class="tool-input rounded-md px-2 py-1.5 max-w-[70%]" aria-label="Record source">
+              <option value="">Load JSON to detect records</option>
+            </select>
+          </div>
+          <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-on-surface-variant" aria-live="polite">
+            <span>Input records: <strong id="inputCount" class="text-on-surface">0</strong></span>
+            <span>Matching: <strong id="matchingCount" class="text-on-surface">0</strong></span>
+            <span id="processingState" class="text-primary" role="status"></span>
+          </div>
+        </div>
+
+        <details class="tool-panel rounded-xl p-5" open>
+          <summary class="cursor-pointer font-semibold text-lg">Output settings</summary>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <label class="text-xs text-on-surface-variant">Format
+              <select id="formatSelect" class="tool-input block w-full mt-1 rounded-md p-2">
+                <option value="csv">CSV</option>
+                <option value="excel-csv">Excel-compatible CSV</option>
+                <option value="tsv">TSV</option>
+                <option value="xml">XML</option>
+                <option value="json">JSON</option>
+              </select>
+            </label>
+            <label class="text-xs text-on-surface-variant">Output file name
+              <input id="fileName" type="text" value="converted-data"
+                class="tool-input block w-full mt-1 rounded-md p-2" />
+            </label>
+            <label id="delimiterWrap" class="text-xs text-on-surface-variant">CSV delimiter
+              <select id="delimiterSelect" class="tool-input block w-full mt-1 rounded-md p-2">
+                <option value=",">Comma (,)</option>
+                <option value=";">Semicolon (;)</option>
+                <option value="&#9;">Tab</option>
+                <option value="|">Pipe (|)</option>
+              </select>
+            </label>
+            <label id="encodingWrap" class="text-xs text-on-surface-variant">CSV encoding
+              <select id="encodingSelect" class="tool-input block w-full mt-1 rounded-md p-2">
+                <option value="utf-8">UTF-8</option>
+                <option value="utf-16le">UTF-16 LE (Excel)</option>
+              </select>
+            </label>
+            <label id="emptyValueWrap" class="text-xs text-on-surface-variant">Empty value replacement
+              <input id="emptyValue" type="text" placeholder="Leave empty"
+                class="tool-input block w-full mt-1 rounded-md p-2" />
+            </label>
+            <label id="previewLimitWrap" class="text-xs text-on-surface-variant">Preview records
+              <select id="previewLimit" class="tool-input block w-full mt-1 rounded-md p-2">
+                <option value="25">25</option>
+                <option value="100" selected>100</option>
+                <option value="500">500</option>
+                <option value="1000">1,000</option>
+              </select>
+            </label>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs text-on-surface-variant">
+            <label id="bomWrap" class="flex items-center gap-2"><input id="bomOption" type="checkbox" class="rounded" />
+              UTF-8 BOM for Excel</label>
+            <label id="formulaWrap" class="flex items-center gap-2"><input id="formulaOption" type="checkbox" checked
+                class="rounded" /> Protect spreadsheet formulas</label>
+            <label id="flattenWrap" class="flex items-center gap-2"><input id="flattenOption" type="checkbox" checked
+                class="rounded" /> Flatten nested fields</label>
+            <label id="minifyWrap" class="flex items-center gap-2"><input id="minifyOption" type="checkbox"
+                class="rounded" /> Minify JSON</label>
+          </div>
+          <div id="xmlOptions"
+            class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4 pt-4 border-t border-outline-variant">
+            <label class="text-xs text-on-surface-variant">Root element
+              <input id="xmlRoot" value="records" class="tool-input block w-full mt-1 rounded-md p-2" />
+            </label>
+            <label class="text-xs text-on-surface-variant">Record element
+              <input id="xmlItem" value="record" class="tool-input block w-full mt-1 rounded-md p-2" />
+            </label>
+            <label class="flex items-center gap-2 text-xs text-on-surface-variant"><input id="xmlDeclaration"
+                type="checkbox" checked class="rounded" /> XML declaration</label>
+            <label class="flex items-center gap-2 text-xs text-on-surface-variant"><input id="xmlPretty" type="checkbox"
+                checked class="rounded" /> Pretty print XML</label>
+            <p class="sm:col-span-2 text-[11px] text-on-surface-variant">Nested values become nested elements; array
+              values repeat &lt;item&gt; elements. Invalid property names are safely normalized.</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="xl:col-span-7 flex flex-col gap-5" aria-label="Fields filters and preview">
+        <div class="tool-panel rounded-xl p-5">
+          <div class="flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <h2 class="font-semibold text-lg">Fields &amp; columns</h2>
+              <p class="text-xs text-on-surface-variant mt-1">Search, choose, reorder, and rename exported fields.</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button id="undoFieldsBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary"
+                disabled>Undo</button>
+              <button id="selectAllBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary">Select
+                all</button>
+              <button id="selectNoneBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary">Deselect
+                all</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+            <label class="text-xs text-on-surface-variant">Selection mode
+              <select id="fieldMode" class="tool-input block w-full mt-1 rounded-md p-2">
+                <option value="include">Include selected fields</option>
+                <option value="exclude">Exclude selected fields</option>
+              </select>
+            </label>
+            <label class="text-xs text-on-surface-variant">Find a field
+              <input id="fieldSearch" type="search" placeholder="Search field paths..."
+                class="tool-input block w-full mt-1 rounded-md p-2" />
+            </label>
+          </div>
+          <div id="fieldList"
+            class="mt-3 max-h-[330px] overflow-auto divide-y divide-outline-variant/50 border border-outline-variant/60 rounded-lg"
+            aria-label="Available fields">
+            <p class="p-4 text-sm text-on-surface-variant">Load JSON to detect fields.</p>
+          </div>
+          <p id="columnCount" class="mono text-[11px] text-on-surface-variant mt-2" aria-live="polite">0 output columns
+          </p>
+        </div>
+
+        <details class="tool-panel rounded-xl p-5" open>
+          <summary class="cursor-pointer font-semibold text-lg">Filter records</summary>
+          <div class="flex items-center gap-2 mt-4">
+            <label for="filterJoin" class="text-xs text-on-surface-variant">Match conditions</label>
+            <select id="filterJoin" class="tool-input rounded-md p-2 text-xs">
+              <option value="and">ALL (AND)</option>
+              <option value="or">ANY (OR)</option>
+            </select>
+            <label class="ml-auto flex items-center gap-2 text-xs text-on-surface-variant"><input id="excludeMatches"
+                type="checkbox" class="rounded" /> Exclude matches</label>
+          </div>
+          <div id="filterList"
+            class="mt-2 border border-outline-variant/60 rounded-lg divide-y divide-outline-variant/50">
+            <p class="p-4 text-sm text-on-surface-variant">No filters. All records are included.</p>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button id="addFilterBtn" type="button"
+              class="text-xs px-3 py-2 bg-surface-container-highest rounded-lg hover:text-primary">＋ Add
+              condition</button>
+            <button id="clearFiltersBtn" type="button"
+              class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary">Clear
+              filters</button>
+            <button id="saveFiltersBtn" type="button"
+              class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary">Save filters
+              locally</button>
+            <button id="restoreFiltersBtn" type="button"
+              class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary">Restore
+              saved</button>
+          </div>
+        </details>
+
+        <div class="tool-panel rounded-xl overflow-hidden">
+          <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-outline-variant">
+            <div>
+              <h2 class="font-semibold">Live output preview</h2>
+              <p id="previewSummary" class="text-xs text-on-surface-variant mt-1">Preview updates as you edit fields and
+                filters.</p>
+            </div>
+            <div class="flex gap-2">
+              <button id="copyBtn" type="button"
+                class="text-xs px-3 py-2 border border-outline-variant rounded-lg hover:text-primary disabled:opacity-40"
+                disabled>Copy</button>
+              <button id="downloadBtn" type="button"
+                class="text-xs px-3 py-2 bg-primary text-on-primary rounded-lg font-semibold hover:brightness-110 disabled:opacity-40"
+                disabled>Download</button>
+            </div>
+          </div>
+          <div id="outputMessage" class="hidden p-4 text-sm text-on-surface-variant" role="status"></div>
+          <pre id="outputPreview"
+            class="mono min-h-[240px] max-h-[650px] overflow-auto p-4 text-xs leading-5 text-on-surface whitespace-pre-wrap break-words"
+            aria-label="Converted output preview"></pre>
+        </div>
+      </section>
+    </div>
+    <p class="text-center text-xs text-on-surface-variant mt-8">Everything is processed locally. No JSON is uploaded to
+      a server.</p>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="converter.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
