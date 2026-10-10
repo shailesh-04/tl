@@ -123,3 +123,30 @@ test('processes a large set of records with stable field discovery', () => {
     assert.deepEqual(fields.map(field => field.path), ['id', 'group.index']);
     assert.equal(converter.filterRecords(records, [{ field: 'id', operator: 'greater', value: 9990 }]).length, 9);
 });
+
+test('builds typed spreadsheet rows for XLSX export', () => {
+    const records = [{ id: 1, ok: true, tags: ['a'], note: null }, { id: 2, ok: false, note: 'x' }];
+    const fields = converter.discoverFields(records);
+    const rows = converter.toSheetRows(records, { fields, csv: { emptyValue: '' } });
+    assert.deepEqual(rows[0], fields.map(field => field.path));
+    assert.equal(rows[1][0], 1);
+    assert.equal(rows[1][1], true);
+    assert.equal(rows[1][rows[0].indexOf('note')], null);
+    assert.equal(converter.downloadDetails('', 'xlsx', 'report.xlsx').fileName, 'report.xlsx');
+});
+
+test('reads keys that contain literal dots', () => {
+    const key = 'Metafield: custom.prd_slider_video [list.url]';
+    const records = [{ ID: '1', [key]: '["https://a.mp4"]', meta: { 'a.b': 5 } }];
+    const fields = converter.discoverFields(records);
+    const field = fields.find(item => item.label === key);
+    assert.ok(field, 'field discovered with its original name');
+    assert.equal(converter.getPath(records[0], field.path), '["https://a.mp4"]');
+    const csv = converter.serialize(records, 'csv', { fields });
+    assert.match(csv.split('\r\n')[0], /"?Metafield: custom\.prd_slider_video \[list\.url\]"?/);
+    assert.match(csv, /https:\/\/a\.mp4/);
+    assert.match(csv.split('\r\n')[0], /meta\.a\.b/);
+    assert.match(csv.split('\r\n')[1], /,5$/);
+    const nested = JSON.parse(converter.serialize(records, 'json', { fields, flatten: false }));
+    assert.deepEqual(nested[0], records[0]);
+});

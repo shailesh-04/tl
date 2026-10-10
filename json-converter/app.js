@@ -91,7 +91,7 @@
 
     function renderFields() {
         const search = els.fieldSearch.value.trim().toLowerCase();
-        const visibleFields = state.fields.filter(field => field.path.toLowerCase().includes(search));
+        const visibleFields = state.fields.filter(field => (field.label || field.path).toLowerCase().includes(search));
         const fragment = document.createDocumentFragment();
         if (!state.fields.length) {
             const empty = document.createElement('p');
@@ -118,8 +118,8 @@
 
             const name = document.createElement('code');
             name.className = 'mono text-xs text-on-surface flex-1 truncate';
-            name.textContent = field.path;
-            name.title = field.path;
+            name.textContent = field.label || field.path;
+            name.title = field.label || field.path;
             const type = document.createElement('span');
             type.className = 'text-[10px] text-on-surface-variant';
             type.textContent = field.type;
@@ -168,7 +168,7 @@
         select.className = 'tool-input rounded-md p-2 text-xs min-w-0';
         select.dataset.action = 'filter-field';
         select.setAttribute('aria-label', 'Field to filter');
-        const options = state.fields.map(field => ({ value: field.path, label: field.path }));
+        const options = state.fields.map(field => ({ value: field.path, label: field.label || field.path }));
         if (!options.length) options.push({ value: '', label: 'No fields available' });
         setOptions(select, options, value || options[0].value);
         return select;
@@ -342,8 +342,10 @@
     }
 
     function resetFields(fields) {
-        const preserve = state.fields.length > 0 || state.keepSelectionOnNextParse;
         const selected = new Set(state.selected);
+        // Keep the previous selection only when it still applies to the new data's fields.
+        const preserve = (state.fields.length > 0 || state.keepSelectionOnNextParse) &&
+            fields.some(field => selected.has(field.path));
         const previousOrder = state.order.slice();
         const aliases = state.aliases;
         state.fields = fields;
@@ -503,11 +505,13 @@
         const isCsv = format === 'csv' || format === 'excel-csv' || format === 'tsv';
         $('delimiterWrap').classList.toggle('hidden', !isCsv || format === 'tsv');
         $('encodingWrap').classList.toggle('hidden', !isCsv);
-        $('emptyValueWrap').classList.toggle('hidden', !isCsv);
+        $('emptyValueWrap').classList.toggle('hidden', !isCsv && format !== 'xlsx');
         $('bomWrap').classList.toggle('hidden', !isCsv || format === 'tsv' || $('encodingSelect').value !== 'utf-8');
         $('formulaWrap').classList.toggle('hidden', !isCsv);
         $('xmlOptions').classList.toggle('hidden', format !== 'xml');
         $('minifyWrap').classList.toggle('hidden', format !== 'json');
+        $('flattenWrap').classList.toggle('hidden', format === 'xlsx');
+        if (format === 'xlsx') loadSheetLibrary().catch(() => {});
         if (format === 'excel-csv') els.bom.checked = true;
     }
 
@@ -531,7 +535,7 @@
         try {
             const saved = JSON.parse(sessionStorage.getItem('tl-json-converter-settings') || 'null');
             if (!saved) return;
-            if (['csv', 'excel-csv', 'tsv', 'xml', 'json'].includes(saved.format)) els.format.value = saved.format;
+            if (['csv', 'excel-csv', 'xlsx', 'tsv', 'xml', 'json'].includes(saved.format)) els.format.value = saved.format;
             if (saved.mode === 'exclude' || saved.mode === 'include') state.mode = saved.mode;
             if (Array.isArray(saved.selected)) state.selected = new Set(saved.selected);
             if (Array.isArray(saved.selected)) state.keepSelectionOnNextParse = true;
@@ -560,6 +564,39 @@
         }
     }
 
+    let sheetLibrary = null;
+    function loadSheetLibrary() {
+        if (window.XLSX) return Promise.resolve(window.XLSX);
+        if (!sheetLibrary) {
+            sheetLibrary = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+                script.onload = () => resolve(window.XLSX);
+                script.onerror = () => { sheetLibrary = null; reject(new Error('Could not load the Excel library. Check your connection.')); };
+                document.head.appendChild(script);
+            });
+        }
+        return sheetLibrary;
+    }
+
+    function buildWorkbookBlob(XLSX, matching, settings) {
+        const rows = api.toSheetRows(matching, settings);
+        const sheet = XLSX.utils.aoa_to_sheet(rows);
+        sheet['!cols'] = rows[0].map((_, column) => {
+            let width = 8;
+            for (let row = 0; row < Math.min(rows.length, 500); row++) {
+                const value = rows[row][column];
+                if (value != null) width = Math.max(width, String(value).length);
+            }
+            return { wch: Math.min(width + 2, 60) };
+        });
+        sheet['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: rows.length - 1, c: rows[0].length - 1 } }) };
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, sheet, 'Data');
+        const data = XLSX.write(workbook, { bookType: 'xlsx', type: 'array', compression: true });
+        return new Blob([data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    }
+
     function downloadOutput() {
         if (!state.parsed || els.download.disabled) return;
         const settings = currentSettings();
@@ -573,9 +610,16 @@
                 if (!matching || requestId !== state.processId) return;
                 if (!matching.length) throw new Error('There are no matching records to export.');
                 if (!settings.fields.length) throw new Error('Select at least one output field before exporting.');
-                const text = api.serialize(matching, settings.format, settings);
-                const details = api.downloadDetails(text, settings.format, els.filename.value, $('encodingSelect').value);
-                const blob = new Blob([api.encodeText(details.text, details.encoding)], { type: details.mimeType });
+                let details, blob;
+                if (settings.format === 'xlsx') {
+                    const XLSX = await loadSheetLibrary();
+                    details = api.downloadDetails('', 'xlsx', els.filename.value);
+                    blob = buildWorkbookBlob(XLSX, matching, settings);
+                } else {
+                    const text = api.serialize(matching, settings.format, settings);
+                    details = api.downloadDetails(text, settings.format, els.filename.value, $('encodingSelect').value);
+                    blob = new Blob([api.encodeText(details.text, details.encoding)], { type: details.mimeType });
+                }
                 const url = URL.createObjectURL(blob);
                 const anchor = document.createElement('a');
                 anchor.href = url;

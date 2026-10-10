@@ -30,10 +30,37 @@
         }
     ];
 
+    // Keys may contain literal dots (e.g. "Metafield: custom.slider"); they are escaped as "\." inside paths.
+    function escapeKey(key) {
+        return String(key).replace(/\\/g, '\\\\').replace(/\./g, '\\.');
+    }
+
+    function joinPath(path, key) {
+        return path ? path + '.' + escapeKey(key) : escapeKey(key);
+    }
+
+    function splitPath(path) {
+        const parts = [];
+        let current = '';
+        const text = String(path);
+        for (let index = 0; index < text.length; index++) {
+            const char = text[index];
+            if (char === '\\' && index + 1 < text.length) current += text[++index];
+            else if (char === '.') { parts.push(current); current = ''; }
+            else current += char;
+        }
+        parts.push(current);
+        return parts;
+    }
+
+    function displayPath(path) {
+        return path === '$value' ? path : splitPath(path).join('.');
+    }
+
     function getPath(value, path) {
         if (path === '$value') return value;
         if (!path) return value;
-        const parts = String(path).split('.');
+        const parts = splitPath(path);
         let current = value;
         for (const part of parts) {
             if (current === null || current === undefined || !Object.prototype.hasOwnProperty.call(Object(current), part)) return undefined;
@@ -43,7 +70,7 @@
     }
 
     function setPath(target, path, value) {
-        const parts = String(path).split('.');
+        const parts = splitPath(path);
         let current = target;
         for (let i = 0; i < parts.length; i++) {
             const key = parts[i];
@@ -67,7 +94,7 @@
         if (depth > 8 || value === null || typeof value !== 'object') return;
         if (Array.isArray(value)) {
             if (path && value.some(item => item !== null && typeof item === 'object' && !Array.isArray(item))) {
-                sources.push({ path, label, kind: 'array', priority: /^(data|results|items|products)$/i.test(path.split('.').pop()) ? 0 : 1 });
+                sources.push({ path, label, kind: 'array', priority: /^(data|results|items|products)$/i.test(splitPath(path).pop()) ? 0 : 1 });
             }
             const sample = value.find(item => item && typeof item === 'object');
             if (sample && !Array.isArray(sample)) collectSources(sample, path ? path + '.0' : '0', label + ' item', sources, depth + 1);
@@ -75,15 +102,15 @@
         }
         Object.keys(value).forEach(key => {
             const child = value[key];
-            const childPath = path ? path + '.' + key : key;
+            const childPath = joinPath(path, key);
             if (Array.isArray(child)) {
                 if (child.some(item => item !== null && typeof item === 'object' && !Array.isArray(item))) {
-                    sources.push({ path: childPath, label: childPath, kind: 'array', priority: /^(data|results|items|products)$/i.test(key) ? 0 : 1 });
+                    sources.push({ path: childPath, label: displayPath(childPath), kind: 'array', priority: /^(data|results|items|products)$/i.test(key) ? 0 : 1 });
                 }
                 const sample = child.find(item => item && typeof item === 'object');
-                if (sample && !Array.isArray(sample)) collectSources(sample, childPath + '.0', childPath + ' item', sources, depth + 1);
+                if (sample && !Array.isArray(sample)) collectSources(sample, childPath + '.0', displayPath(childPath) + ' item', sources, depth + 1);
             } else if (child && typeof child === 'object') {
-                collectSources(child, childPath, childPath, sources, depth + 1);
+                collectSources(child, childPath, displayPath(childPath), sources, depth + 1);
             }
         });
     }
@@ -104,7 +131,7 @@
     function addField(fields, seen, path, value) {
         if (!seen.has(path)) {
             seen.add(path);
-            fields.push({ path, type: value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value });
+            fields.push({ path, label: displayPath(path), type: value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value });
         }
     }
 
@@ -121,7 +148,7 @@
         if (value && typeof value === 'object') {
             const keys = Object.keys(value);
             if (!keys.length && path) addField(fields, seen, path, value);
-            else keys.forEach(key => visitFields(value[key], path ? path + '.' + key : key, fields, seen, depth + 1));
+            else keys.forEach(key => visitFields(value[key], joinPath(path, key), fields, seen, depth + 1));
             return;
         }
         addField(fields, seen, path || '$value', value);
@@ -147,7 +174,8 @@
     function uniqueHeaders(fields, aliases) {
         const counts = new Map();
         return fields.map(field => {
-            const initial = (aliases && aliases[field.path] || field.path).trim() || field.path;
+            const label = field.label || displayPath(field.path);
+            const initial = (aliases && aliases[field.path] || label).trim() || label;
             const count = (counts.get(initial) || 0) + 1;
             counts.set(initial, count);
             return count === 1 ? initial : initial + '_' + count;
@@ -165,23 +193,10 @@
             if (field.path === '$value') return;
             const value = getPath(record, field.path);
             if (value === undefined) return;
-            setPath(output, field.path, value);
-            if (headers[index] !== field.path) {
-                deletePath(output, field.path);
-                setPath(output, headers[index], value);
-            }
+            const alias = headers[index] !== (field.label || displayPath(field.path));
+            setPath(output, alias ? headers[index] : field.path, value);
         });
         return fields.some(field => field.path === '$value') ? getPath(record, '$value') : output;
-    }
-
-    function deletePath(target, path) {
-        const parts = String(path).split('.');
-        let current = target;
-        for (let index = 0; index < parts.length - 1; index++) {
-            if (!current || typeof current !== 'object') return;
-            current = current[parts[index]];
-        }
-        if (current && typeof current === 'object') delete current[parts[parts.length - 1]];
     }
 
     function buildRows(records, fields, options) {
@@ -304,6 +319,21 @@
         return (settings.declaration ? '<?xml version="1.0" encoding="UTF-8"?>' + newline : '') + body;
     }
 
+    function sheetCell(value, emptyValue) {
+        if (value === null || value === undefined || value === '') return emptyValue ? String(emptyValue) : null;
+        if (typeof value === 'number') return Number.isFinite(value) ? value : String(value);
+        if (typeof value === 'boolean') return value;
+        const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
+        return text.length > 32767 ? text.slice(0, 32767) : text;
+    }
+
+    function toSheetRows(records, options) {
+        const settings = options || {};
+        const built = buildRows(records, settings.fields || [], { aliases: settings.aliases, flatten: true });
+        const emptyValue = settings.csv && settings.csv.emptyValue;
+        return [built.columns.slice()].concat(built.rows.map(row => built.columns.map(column => sheetCell(row && row[column], emptyValue))));
+    }
+
     function serialize(records, format, options) {
         const settings = options || {};
         const built = buildRows(records, settings.fields || [], { aliases: settings.aliases, flatten: settings.flatten });
@@ -313,6 +343,7 @@
                 : built.rows;
             return JSON.stringify(output, null, settings.minified ? 0 : 2);
         }
+        if (format === 'xlsx') return toCSV(built.rows, built.columns, Object.assign({}, settings.csv, { delimiter: '	', bom: false, protectFormulas: false }));
         if (format === 'xml') return toXML(built.rows, settings.xml);
         if (format === 'tsv') return toCSV(built.rows, built.columns, Object.assign({}, settings.csv, { delimiter: '\t' }));
         if (format === 'excel-csv') return toCSV(built.rows, built.columns, Object.assign({}, settings.csv, { bom: true }));
@@ -345,13 +376,13 @@
     }
 
     function downloadDetails(text, format, fileName, encoding) {
-        const extensions = { csv: 'csv', 'excel-csv': 'csv', tsv: 'tsv', xml: 'xml', json: 'json' };
+        const extensions = { csv: 'csv', 'excel-csv': 'csv', tsv: 'tsv', xml: 'xml', json: 'json', xlsx: 'xlsx' };
         const selectedEncoding = ['utf-8', 'utf-16le'].includes(encoding) ? encoding : 'utf-8';
-        const mimeTypes = { csv: 'text/csv;charset=' + selectedEncoding, 'excel-csv': 'text/csv;charset=' + selectedEncoding, tsv: 'text/tab-separated-values;charset=' + selectedEncoding, xml: 'application/xml;charset=utf-8', json: 'application/json;charset=utf-8' };
+        const mimeTypes = { csv: 'text/csv;charset=' + selectedEncoding, 'excel-csv': 'text/csv;charset=' + selectedEncoding, tsv: 'text/tab-separated-values;charset=' + selectedEncoding, xml: 'application/xml;charset=utf-8', json: 'application/json;charset=utf-8', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' };
         const extension = extensions[format];
         if (!extension) throw new Error('Unsupported output format: ' + format);
         const baseName = String(fileName || 'converted-data').trim().replace(/[<>:"/\\|?*\u0000-\u001F]/g, '-').replace(/\.+$/g, '') || 'converted-data';
-        return { text, mimeType: mimeTypes[format], fileName: baseName.replace(/\.(csv|tsv|xml|json)$/i, '') + '.' + extension, encoding: format === 'csv' || format === 'excel-csv' || format === 'tsv' ? selectedEncoding : 'utf-8' };
+        return { text, mimeType: mimeTypes[format], fileName: baseName.replace(/\.(csv|tsv|xml|json|xlsx)$/i, '') + '.' + extension, encoding: format === 'csv' || format === 'excel-csv' || format === 'tsv' ? selectedEncoding : 'utf-8' };
     }
 
     function encodeText(text, encoding) {
@@ -370,6 +401,8 @@
     return {
         DEFAULT_SAMPLE,
         getPath,
+        splitPath,
+        displayPath,
         setPath,
         discoverSources,
         getSourceRecords,
@@ -382,6 +415,7 @@
         filterRecords,
         toCSV,
         toXML,
+        toSheetRows,
         validXmlName,
         serialize,
         parseJSON,
