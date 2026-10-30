@@ -1,51 +1,132 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://shailesh-04.github.io/tl/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/tools-hub/screen.png</image:loc>
+      <image:title>TL — free online developer tools</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://shailesh-04.github.io/tl/tools-hub/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/to-json/</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/json-formatter/</loc>
-    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/tools-hub/screen.png</image:loc>
+      <image:title>Developer tools dashboard</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://shailesh-04.github.io/tl/json-converter/</loc>
-    <priority>0.8</priority>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://shailesh-04.github.io/tl/base64-encoder-decoder/</loc>
+    <loc>https://shailesh-04.github.io/tl/json-formatter/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/json-formatter/screen.png</image:loc>
+      <image:title>JSON formatter and validator</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/to-json/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/to-json/screen.png</image:loc>
+      <image:title>XLSX to JSON converter</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://shailesh-04.github.io/tl/csv-to-json/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/image-optimizer/</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/markdown-previewer/</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/regex-tester/</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://shailesh-04.github.io/tl/uuid-generator/</loc>
-    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/csv-to-json/screen.png</image:loc>
+      <image:title>CSV to JSON converter</image:title>
+    </image:image>
   </url>
   <url>
     <loc>https://shailesh-04.github.io/tl/video-converter/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/video-converter/screen.png</image:loc>
+      <image:title>Browser-based video converter</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/image-optimizer/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/image-optimizer/screen.png</image:loc>
+      <image:title>Image optimizer and compressor</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/base64-encoder-decoder/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/base64-encoder-decoder/screen.png</image:loc>
+      <image:title>Base64 encoder and decoder</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/regex-tester/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/regex-tester/screen.png</image:loc>
+      <image:title>Regular expression tester</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/markdown-previewer/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/markdown-previewer/screen.png</image:loc>
+      <image:title>Live Markdown previewer</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/uuid-generator/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://shailesh-04.github.io/tl/uuid-generator/screen.png</image:loc>
+      <image:title>UUID v4 generator</image:title>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/privacy/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://shailesh-04.github.io/tl/terms/</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
   </url>
 </urlset>

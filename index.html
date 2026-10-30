@@ -11,7 +11,8 @@
     <meta name="keywords"
         content="json converter, json to csv, json to xml, json data filter, json formatter, csv to json, xlsx to json, base64 encoder decoder, regex tester, uuid generator, markdown previewer, image optimizer, video converter, online developer tools, free developer tools" />
     <meta name="author" content="TL - Tools Library" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://shailesh-04.github.io/tl/" />
 
     <!-- Open Graph -->
@@ -22,6 +23,8 @@
         content="JSON formatter, XLSX/CSV to JSON, Base64 encoder/decoder, image optimizer, video converter, regex tester, Markdown previewer &amp; UUID generator. 100% free, private, and client-side." />
     <meta property="og:url" content="https://shailesh-04.github.io/tl/" />
     <meta property="og:image" content="https://shailesh-04.github.io/tl/tools-hub/screen.png" />
+    <meta property="og:image:alt" content="TL — a library of free, browser-based developer tools" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -29,8 +32,14 @@
     <meta name="twitter:description"
         content="JSON formatter, XLSX/CSV to JSON, Base64, image optimizer, video converter, regex tester, Markdown previewer &amp; UUID generator — free, private, and client-side." />
     <meta name="twitter:image" content="https://shailesh-04.github.io/tl/tools-hub/screen.png" />
+    <meta name="twitter:image:alt" content="TL — a library of free, browser-based developer tools" />
 
     <meta name="theme-color" content="#0b1326" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="application-name" content="TL — Tools Library" />
+    <link rel="manifest" href="/tl/site.webmanifest" />
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" />
+    <link rel="dns-prefetch" href="https://cdn.tailwindcss.com" />
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A0%EF%B8%8F%3C/text%3E%3C/svg%3E" />
 
@@ -63,6 +72,78 @@
     { "@type": "SoftwareApplication", "position": 8, "name": "Regex Tester", "url": "https://shailesh-04.github.io/tl/regex-tester/", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
     { "@type": "SoftwareApplication", "position": 9, "name": "UUID Generator", "url": "https://shailesh-04.github.io/tl/uuid-generator/", "applicationCategory": "DeveloperApplication", "operatingSystem": "Any", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } },
     { "@type": "SoftwareApplication", "position": 10, "name": "Video Converter", "url": "https://shailesh-04.github.io/tl/video-converter/", "applicationCategory": "MultimediaApplication", "operatingSystem": "Any", "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" } }
+  ]
+}
+</script>
+
+    
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://shailesh-04.github.io/tl/#organization",
+  "name": "TL — Tools Library",
+  "url": "https://shailesh-04.github.io/tl/",
+  "description": "An open-source collection of developer tools that run entirely in the browser, with no uploads and no accounts.",
+  "logo": "https://shailesh-04.github.io/tl/tools-hub/screen.png",
+  "sameAs": [
+    "https://github.com/shailesh-04/tl"
+  ]
+}
+</script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Are the TL developer tools free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Every tool is free and open source under the MIT licence. There is no account, no usage limit, no watermark, and no paid tier."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my data uploaded when I use these tools?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Every tool processes your input in your own browser using JavaScript and WebAssembly. Files and text never reach a server, so confidential spreadsheets, API payloads, and personal photos stay on your device."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need to install anything?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. The tools are plain web pages — open one in any modern browser on desktop or mobile and start working immediately."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which tools are available?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Converters for XLSX, CSV, JSON, XML, and TSV; a JSON formatter and validator; a Base64 encoder and decoder; a regex tester; a UUID generator; a Markdown previewer; an image optimizer; and a browser-based video converter."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do the tools work offline?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The processing itself is local, but a page does fetch its styling and fonts from a CDN on first load, so the initial visit needs a connection."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a file size limit?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No limit is imposed. The practical ceiling is how much memory your browser can allocate, which depends on your device."
+      }
+    }
   ]
 }
 </script>
@@ -128,6 +209,8 @@
                 <a href="#why"
                     class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">Why
                     TL</a>
+                <a href="#faq"
+                    class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">FAQ</a>
                 <a href="https://github.com/shailesh-04/tl" target="_blank" rel="noopener noreferrer"
                     class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors">GitHub</a>
                 <a href="tools-hub/"
@@ -483,6 +566,43 @@
             </div>
         </section>
 
+        <!-- SEO-FAQ:BEGIN -->
+        <section id="faq" class="px-gutter py-margin-md scroll-mt-16 border-t border-outline-variant"
+            aria-labelledby="faq-heading">
+            <div class="max-w-container-max mx-auto">
+                <h2 class="font-headline-lg text-headline-lg text-on-surface mb-8 text-center" id="faq-heading">
+                    Frequently asked questions</h2>
+                <div class="max-w-3xl mx-auto grid gap-6 md:grid-cols-2">
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Are the TL developer tools free?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">Yes. Every tool is free and open source under the MIT licence. There is no account, no usage limit, no watermark, and no paid tier.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Is my data uploaded when I use these tools?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">No. Every tool processes your input in your own browser using JavaScript and WebAssembly. Files and text never reach a server, so confidential spreadsheets, API payloads, and personal photos stay on your device.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Do I need to install anything?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">No. The tools are plain web pages — open one in any modern browser on desktop or mobile and start working immediately.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Which tools are available?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">Converters for XLSX, CSV, JSON, XML, and TSV; a JSON formatter and validator; a Base64 encoder and decoder; a regex tester; a UUID generator; a Markdown previewer; an image optimizer; and a browser-based video converter.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Do the tools work offline?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">The processing itself is local, but a page does fetch its styling and fonts from a CDN on first load, so the initial visit needs a connection.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-on-surface font-semibold mb-1">Is there a file size limit?</h3>
+                        <p class="text-on-surface-variant text-sm leading-relaxed">No limit is imposed. The practical ceiling is how much memory your browser can allocate, which depends on your device.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- SEO-FAQ:END -->
+
+
     </main>
 
     <footer class="w-full py-12 mt-8 bg-surface-container-lowest border-t border-outline-variant">
@@ -495,9 +615,9 @@
                 <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors"
                     href="https://github.com/shailesh-04/tl" target="_blank" rel="noopener noreferrer">GitHub</a>
                 <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors"
-                    href="#">Privacy</a>
+                    href="privacy/">Privacy</a>
                 <a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-colors"
-                    href="#">Terms</a>
+                    href="terms/">Terms</a>
             </nav>
         </div>
     </footer>

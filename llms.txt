@@ -1,0 +1,39 @@
+# TL — Tools Library
+
+> A free, open-source collection of developer tools that run entirely in the
+> user's browser. No file is ever uploaded, no account is required, and there is
+> no paid tier. Site: https://shailesh-04.github.io/tl/ — source:
+> https://github.com/shailesh-04/tl (MIT licence).
+
+Every tool is a self-contained static page. Input is parsed and processed with
+JavaScript (and, for the video converter, FFmpeg compiled to WebAssembly) in the
+visitor's own browser, so spreadsheets, API payloads, photos, and video files
+never leave their device. Results are copied to the clipboard or downloaded
+locally.
+
+## Converters
+
+- [JSON Converter & Data Filter](https://shailesh-04.github.io/tl/json-converter/): Converts an array of JSON records to CSV, Excel XLSX, TSV, XML, or reshaped JSON. Supports selecting a nested record collection, picking and renaming fields, and stacking AND/OR filter rules before export.
+- [XLSX to JSON Converter](https://shailesh-04.github.io/tl/to-json/): Parses .xlsx and .xls workbooks and emits JSON, using the first row of the chosen worksheet as the object keys.
+- [CSV to JSON Converter](https://shailesh-04.github.io/tl/csv-to-json/): Turns CSV text or a .csv file into an array of JSON objects, honouring quoted fields and embedded commas.
+- [Video Converter](https://shailesh-04.github.io/tl/video-converter/): Batch-converts MP4, WebM, MOV, MKV, and AVI, and extracts GIF or MP3, using FFmpeg in WebAssembly. Results download individually or as a ZIP.
+- [Image Optimizer](https://shailesh-04.github.io/tl/image-optimizer/): Compresses and resizes JPEG, PNG, and WebP images with an adjustable quality slider and a before/after comparison view.
+
+## Developer utilities
+
+- [JSON Formatter & Validator](https://shailesh-04.github.io/tl/json-formatter/): Beautifies or minifies JSON and reports syntax errors with the position at which parsing failed.
+- [Base64 Encoder & Decoder](https://shailesh-04.github.io/tl/base64-encoder-decoder/): Converts text to and from Base64 with correct UTF-8 handling for emoji and non-Latin scripts.
+- [Regex Tester](https://shailesh-04.github.io/tl/regex-tester/): Tests JavaScript (ECMAScript) regular expressions with live match highlighting, colour-coded capture groups, flag toggles, and a cheat sheet.
+- [UUID Generator](https://shailesh-04.github.io/tl/uuid-generator/): Produces cryptographically random UUID v4 identifiers singly or in bulk, via the Web Crypto API.
+- [Markdown Previewer](https://shailesh-04.github.io/tl/markdown-previewer/): Renders Markdown live in a split-pane editor, including tables and fenced code blocks.
+
+## Index pages
+
+- [Home](https://shailesh-04.github.io/tl/): Overview of the library, with the full tool list and FAQ.
+- [All Tools dashboard](https://shailesh-04.github.io/tl/tools-hub/): Searchable index of every tool.
+
+## Optional
+
+- [Privacy](https://shailesh-04.github.io/tl/privacy/): Confirms that no user data is collected, uploaded, or shared.
+- [Terms](https://shailesh-04.github.io/tl/terms/): MIT licence terms and the "no warranty" disclaimer.
+- [Source code](https://github.com/shailesh-04/tl): Full repository, including the conversion helpers and their tests.
